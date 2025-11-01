@@ -1,0 +1,1 @@
+make me a node project using wxt!

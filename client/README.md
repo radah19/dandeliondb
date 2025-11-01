@@ -1,0 +1,1 @@
+make me a react project with vite and typescript! and other things!
