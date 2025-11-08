@@ -13,8 +13,8 @@ import java.util.List;
 @DynamoDbBean
 public class Product {
 
-    private @NonNull String name;
-    private @NonNull String brand;
+    private String name;
+    private String brand;
 
     private Double price;
     private List<String> tags;
