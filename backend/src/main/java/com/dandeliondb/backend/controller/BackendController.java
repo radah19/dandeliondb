@@ -1,6 +1,8 @@
 package com.dandeliondb.backend.controller;
 
 import com.dandeliondb.backend.model.Product;
+import com.dandeliondb.backend.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,14 +14,26 @@ import java.util.List;
 @RestController
 public class BackendController {
 
+    private ProductRepository productRepository;
+
+    @Autowired
+    public void setProductRepository(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
+
     @GetMapping(value="/products")
     public List<Product> getProducts() {
         return new ArrayList<>();
     }
 
     @PostMapping(value="/products")
-    public List<Product> postProducts(@RequestBody List<Product> products) {
-        return new ArrayList<>();
+    public void addProduct(@RequestBody Product product) {
+        try {
+            productRepository.addProduct(product);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
     }
 
     // Test Functions
@@ -102,7 +116,7 @@ public class BackendController {
                 List.of("Desc 1", "Desc 2")
         );
 
-        // Push List.of(prod1, prod2, prod3) to DB!
+
 
         return List.of(prod1, prod2, prod3);
     }

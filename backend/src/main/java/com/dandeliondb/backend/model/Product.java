@@ -1,14 +1,18 @@
 package com.dandeliondb.backend.model;
 
 import lombok.*;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 import java.util.List;
 
-@Setter
-@Getter
 @AllArgsConstructor
-@ToString
+@NoArgsConstructor
+@Data
+@DynamoDbBean
 public class Product {
+
     private @NonNull String name;
     private @NonNull String brand;
 
@@ -41,5 +45,15 @@ public class Product {
         this.length = null;
         this.height = null;
         this.imageIndex = null;
+    }
+
+    @DynamoDbPartitionKey
+    public String getName() {
+        return name;
+    }
+
+    @DynamoDbSortKey
+    public String getBrand() {
+        return brand;
     }
 }
