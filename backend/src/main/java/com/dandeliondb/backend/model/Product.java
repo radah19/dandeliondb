@@ -24,28 +24,8 @@ public class Product {
     private String ean;
 
     private Double weight;
-    private Double width;
-    private Double length;
-    private Double height;
-
-    private Integer imageIndex;
 
     private List<String> descriptions;
-
-    public Product(String name, String brand) {
-        this.name = name;
-        this.brand = brand;
-        this.price = null;
-        this.tags = null;
-        this.upc = null;
-        this.sku = null;
-        this.ean = null;
-        this.weight = null;
-        this.width = null;
-        this.length = null;
-        this.height = null;
-        this.imageIndex = null;
-    }
 
     @DynamoDbPartitionKey
     public String getName() {
