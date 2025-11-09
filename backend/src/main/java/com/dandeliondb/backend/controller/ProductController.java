@@ -5,6 +5,8 @@ import com.dandeliondb.backend.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 public class ProductController {
 
@@ -15,15 +17,25 @@ public class ProductController {
         this.productRepository = productRepository;
     }
 
-    /*
-    @GetMapping(value="/product/{name}")
-    public List<Product> getProducts(@PathVariable String name) {
+    @GetMapping(value="/product/{name}/{brand}")
+    public Product getProductByNameAndBrand(@PathVariable String name, @PathVariable String brand) {
         try {
-            productRepository.getProduct(name);
+            return productRepository.getProductByNameAndBrand(name, brand);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
+            return null;
         }
-    } */
+    }
+
+    @GetMapping(value="/product/{name}")
+    public List<Product> getProductByName(@PathVariable String name) {
+        try {
+            return productRepository.getProductByName(name);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return null;
+        }
+    }
 
     @PostMapping(value="/products")
     public void addProduct(@RequestBody Product product) {
