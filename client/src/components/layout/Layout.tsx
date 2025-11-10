@@ -9,9 +9,6 @@ function Layout() {
       <main className="main-content">
         <Outlet />
       </main>
-      <footer className="footer">
-        <p>&copy; 2025 DandelionDB - Capstone Project</p>
-      </footer>
     </div>
   );
 }

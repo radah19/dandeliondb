@@ -1,21 +1,13 @@
 .layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+  background: #FAF9F6;
 }
 
 .main-content {
   flex: 1;
-}
-
-.footer {
-  background-color: #FAF9F6;
-  padding: 2rem;
-  text-align: center;
-  color: #666;
-  border-top: 1px solid #e0e0e0;
-}
-
-.footer p {
-  margin: 0;
+  padding-top: 0;
+  overflow: hidden;
 }
