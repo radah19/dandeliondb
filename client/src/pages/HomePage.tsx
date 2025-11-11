@@ -1,8 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import homepageOne from '../assets/dandeliongif1.gif';
 import homepageTwo from '../assets/dandeliongif2.gif';
 
 function HomePage() {
+  const navigate = useNavigate();
+
   return (
     <div className="home-page"> 
       <div className="slogan-section">
@@ -21,7 +24,9 @@ function HomePage() {
       </div>
       <div className="button-section">
         <button className="auth-button login-button">Login</button>
-        <button className="auth-button signup-button">Sign Up</button>
+        <button className="auth-button signup-button" onClick={() => navigate('/signup')}>
+          Sign Up
+        </button>
       </div>
     </div>
   );
