@@ -1,0 +1,13 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: #FAF9F6;
+}
+
+.main-content {
+  flex: 1;
+  padding-top: 0;
+  overflow: hidden;
+}
