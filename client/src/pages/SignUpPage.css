@@ -44,11 +44,6 @@
   z-index: 10;
 }
 
-.back-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  transform: translateX(-4px);
-}
-
 .signup-tile {
   background-color: #F2D863;
   border-radius: 16px;
