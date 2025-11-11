@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 public class ScrapingService  {
-    @Value("#{'${urltoscrape.urls}'.split(',')}")
+    @Value("#{'${web.urls}'.split(',')}")
     private List<String> urls;
 
     public void run() {

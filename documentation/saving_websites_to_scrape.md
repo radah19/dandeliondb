@@ -48,7 +48,14 @@ Then click `New Job` -> `From Default Template`
 If should create a job template with a script call `main.sh` to run. Scroll down and click the `Open Editor` button to edit the shell's scripts content. Put the wget command we had here:
 ```shell
 #!/bin/bash
-# JOB HEADERS HERE
+
+# check this documentation out for job composer info: https://gatech.service-now.com/technology?id=kb_article_view&sysparm_article=KB0042096#job-submission
+
+#SBATCH -JDandelionDB                       # Job name
+#SBATCH -t8:00:00                           # Duration of the job (Ex: 8 hour)
+#SBATCH -oReport-%j.out                     # Combined output and error messages file
+#SBATCH --mail-type=BEGIN,END,FAIL          # Mail preferences
+#SBATCH --mail-user=aadulla7@gatech.edu     # E-mail address for notifications
 
 wget --mirror -e robots=on --convert-links --adjust-extension --page-requisites --no-parent --wait=2 --random-wait --limit-rate=200k --reject-regex="(logout|login|signup)" --level=2 https://playmatterstoys.com/
 ```
