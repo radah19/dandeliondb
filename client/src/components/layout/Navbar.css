@@ -1,5 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Goudy+Bookletter+1911&display=swap');
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .navbar {
   background-color: #F2D863;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -7,6 +18,8 @@
   margin: 1.5rem 2rem 0;
   z-index: 1000;
   border-radius: 16px;
+  animation: fadeIn 1.2s ease-out forwards;
+  opacity: 0;
 }
 
 .nav-container {
