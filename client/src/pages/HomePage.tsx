@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './HomePage.css';
 import dandelionGif1 from '../assets/dandeliongif1.gif';
 import dandelionGif2 from '../assets/dandeliongif2.gif';
-import tile1 from '../assets/tile_1.png';
+import dandelionGif3 from '../assets/dandeliongif3.gif';
 
 function HomePage() {
   const featuresRef = useRef<HTMLDivElement>(null);
@@ -93,7 +93,7 @@ function HomePage() {
         </div>
 
         <div className="image-display">
-          {activeTile === 1 && <img src={tile1} alt="Independent toy store" className="active-image" />}
+          {activeTile === 1 && <img src={dandelionGif3} alt="Independent toy store" className="active-image" />}
           {activeTile === 2 && <img src={dandelionGif1} alt="Autofill feature" className="active-image" />}
           {activeTile === 3 && <img src={dandelionGif2} alt="Search system" className="active-image" />}
         </div>
