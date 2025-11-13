@@ -1,4 +1,4 @@
-.signup-page {
+.login-page {
   width: 100%;
   height: 100%;
   background: #FAF9F6;
@@ -8,7 +8,7 @@
   overflow: hidden;
 }
 
-.signup-container {
+.login-container {
   width: 100%;
   max-width: 500px;
   padding: 2rem;
@@ -31,14 +31,14 @@
   z-index: 10;
 }
 
-.signup-tile {
+.login-tile {
   background-color: #F2D863;
   border-radius: 16px;
   padding: 3rem 2.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.signup-title {
+.login-title {
   font-family: "Goudy Bookletter 1911", serif;
   font-size: 2.5rem;
   font-weight: 400;
@@ -47,7 +47,7 @@
   text-align: center;
 }
 
-.signup-form {
+.login-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -108,15 +108,15 @@
 }
 
 @media (max-width: 768px) {
-  .signup-container {
+  .login-container {
     padding: 1rem;
   }
 
-  .signup-tile {
+  .login-tile {
     padding: 2rem 1.5rem;
   }
 
-  .signup-title {
+  .login-title {
     font-size: 2rem;
   }
 }
