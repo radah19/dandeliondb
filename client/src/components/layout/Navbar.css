@@ -25,7 +25,7 @@
 .nav-container {
   padding: 1rem 2rem;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 }
 
@@ -37,12 +37,45 @@
   margin: 0;
 }
 
+.nav-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-button {
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-family: "Goudy Bookletter 1911", serif;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 400;
+  background-color: #000;
+  color: #F2D863;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.nav-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 @media (max-width: 768px) {
   .nav-container {
     padding: 1rem;
   }
 
   .nav-logo {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+  }
+  
+  .nav-buttons {
+    gap: 0.5rem;
+  }
+  
+  .nav-button {
+    padding: 0.4rem 1rem;
+    font-size: 0.875rem;
   }
 }

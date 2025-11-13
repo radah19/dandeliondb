@@ -1,27 +1,27 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './SignUpPage.css';
+import './LoginPage.css';
 
-function SignUpPage() {
+function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: implement sign-up logic
-    console.log('Sign up:', { username, password });
+    // TODO: implement login logic
+    console.log('Login:', { username, password });
   };
 
   return (
-    <div className="signup-page">
-      <div className="signup-container">
+    <div className="login-page">
+      <div className="login-container">
         <button className="back-button" onClick={() => navigate('/', { state: { from: 'auth' } })}>
           ← Back
         </button>
-        <div className="signup-tile">
-          <h2 className="signup-title">Sign Up</h2>
-          <form onSubmit={handleSubmit} className="signup-form">
+        <div className="login-tile">
+          <h2 className="login-title">Login</h2>
+          <form onSubmit={handleSubmit} className="login-form">
             <div className="form-group">
               <label htmlFor="username">Username</label>
               <input
@@ -45,7 +45,7 @@ function SignUpPage() {
               />
             </div>
             <button type="submit" className="submit-button">
-              Sign Up
+              Login
             </button>
           </form>
         </div>
@@ -54,4 +54,4 @@ function SignUpPage() {
   );
 }
 
-export default SignUpPage;
+export default LoginPage;

@@ -3,7 +3,20 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+.hero-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #FAF9F6;
+  gap: 1rem;
+  margin-top: -10vh;
 }
 
 @keyframes fadeIn {
@@ -18,12 +31,17 @@
 }
 
 .slogan-section {
-  padding-top: 1rem;
+  padding-top: 0;
   padding-bottom: 1.5rem;
   text-align: center;
   background: #FAF9F6;
   animation: fadeIn 1.2s ease-out 0.3s forwards;
   opacity: 0;
+}
+
+.no-animate .slogan-section {
+  animation: none;
+  opacity: 1;
 }
 
 .slogan {
@@ -45,33 +63,62 @@
   opacity: 0;
 }
 
+.no-animate .hero-section {
+  animation: none;
+  opacity: 1;
+}
+
 .hero-content {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
   width: 100%;
-}
-
-.gif-container {
   display: flex;
-  justify-content: center;
-  padding-bottom: 2rem;
-  gap: 2rem;
-  flex-wrap: nowrap;
+  flex-direction: column;
   align-items: center;
+  gap: 1.5rem;
 }
 
-.demo-gif {
-  width: 50%;
-  max-height: 70vh;
-  height: auto;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.hero-title {
+  font-size: 3.5rem;
+  font-family: "Goudy Bookletter 1911", serif;
+  font-weight: 400;
+  color: #000;
+  margin: 0;
+  text-align: center;
 }
 
-.button-section {
+.hero-description {
+  font-size: 1.3rem;
+  font-family: "Goudy Bookletter 1911", serif;
+  color: #333;
+  margin: 0;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.signup-cta-button {
+  padding: 0.75rem 3rem;
+  font-size: 1.5rem;
+  font-family: "Goudy Bookletter 1911", serif;
+  background-color: #000;
+  color: #F2D863;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 400;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.signup-cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.explore-section {
   background: #FAF9F6;
-  padding: 1.5rem 2rem;
+  padding: 2rem 2rem 0;
   display: flex;
   justify-content: center;
   gap: 1.5rem;
@@ -79,31 +126,126 @@
   opacity: 0;
 }
 
-.auth-button {
-  padding: 0.5rem 2rem;
-  font-size: 1.25rem;
+.no-animate .explore-section {
+  animation: none;
+  opacity: 1;
+}
+
+.explore-button {
+  padding: 0.75rem 3rem;
+  font-size: 1.5rem;
   font-family: "Goudy Bookletter 1911", serif;
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   font-weight: 400;
   background-color: #F2D863;
   color: #000;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.auth-button:hover {
+.explore-button:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
-.login-button {
-  background-color: #F2D863;
+.features-section {
+  background: #FAF9F6;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.signup-button {
+.tiles-container {
+  flex: 0 1 600px;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.feature-tile {
   background-color: #F2D863;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feature-tile:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.feature-tile.active {
+  border-color: #000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.feature-tile h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.8rem;
+  color: #000;
+  font-family: "Goudy Bookletter 1911", serif;
+}
+
+.feature-tile p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #333;
+  font-family: "Goudy Bookletter 1911", serif;
+}
+
+.image-display {
+  flex: 1;
+  max-width: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(242, 216, 99, 0.15);
+  border-radius: 16px;
+  position: sticky;
+  top: 2rem;
+  padding: 0.5rem;
+  margin: 0 auto;
+}
+
+.active-image {
+  max-width: 100%;
+  max-height: 600px;
+  object-fit: contain;
+  border-radius: 12px;
+  animation: fadeIn 0.4s ease-in;
+}
+
+@media (max-width: 968px) {
+  .features-section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .image-display {
+    position: relative;
+    top: 0;
+    width: 100%;
+    max-width: 500px;
+    height: 400px;
+    order: -1;
+  }
+
+  .tiles-container {
+    width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
@@ -120,13 +262,32 @@
     max-height: 35vh;
   }
   
-  .button-section {
-    gap: 1rem;
-    padding: 0.75rem 1rem;
+  .features-section {
+    padding: 2rem 1rem;
   }
   
-  .auth-button {
-    padding: 0.4rem 1.5rem;
-    font-size: 1rem;
+  .image-display {
+    height: 300px;
+  }
+
+  .feature-tile {
+    padding: 1.5rem;
+  }
+
+  .feature-tile h2 {
+    font-size: 1.4rem;
+  }
+
+  .feature-tile p {
+    font-size: 0.9rem;
+  }
+  
+  .explore-section {
+    padding: 1.5rem 1rem 1.5rem;
+  }
+  
+  .explore-button {
+    font-size: 1.25rem;
+    padding: 0.6rem 2rem;
   }
 }
