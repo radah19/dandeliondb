@@ -18,13 +18,15 @@ Also seems to be installable here: http://eternallybored.org/misc/wget/
 ## Run Wget on website you wish to save locally (probably don't run Wget locally, use PACE ICE mentioned below)
 For if I wanted to save `https://playermattertoys.com/`, I could run the following command:
 ```shell
-wget --mirror -e robots=on --convert-links --adjust-extension --page-requisites --no-parent --wait=2 --random-wait --limit-rate=200k --reject-regex="(logout|login|signup)" --level=2 https://playmatterstoys.com/
+wget --mirror -e robots=on --convert-links --adjust-extension --page-requisites --no-parent --wait=2 --random-wait --limit-rate=200k --reject-regex="(logout|login|signup|\?add-to-cart=)" --level=2 -I /shop,/product,/product-category -X /add-to-cart https://playmatterstoys.com/
 ```
 _Note: If the website has something like a www and you don't include it, wget won't work! Just copy whatever link on the homepage you find when running Wget._
 
 Overview of what these all do, with information stolen entirely from the [Wget manual](https://www.gnu.org/software/wget/manual/wget.html)
 - `--mirror`: Turns on options suitable for mirroring a webpage
 - `--convert-links`: After the download is complete, converts the links in the document to make them suitable for local viewing.
+- `-I`: Include flag, specifies the routes that wget should save, preventing uneeded pages from being downloaded
+- `-X`: Exclude flag, specifies the routes that wget should avoid
 - `--wait=[seconds]`: Wait the specified number of seconds between the retrievals. Use of this option is recommended, as it lightens the server load by making the requests less frequent.
 - `--random-wait`: Prevents websites from being able to tell our web-scraper is scraping it 🕵️
 - `--limit-rate=[amount]`: Limit the download speed to _amount_ bytes per second, helps also with limiting risk of a DoS attack. This kind of makes the whole process very slow though!
@@ -57,7 +59,7 @@ If should create a job template with a script call `main.sh` to run. Scroll down
 #SBATCH --mail-type=BEGIN,END,FAIL          # Mail preferences
 #SBATCH --mail-user=aadulla7@gatech.edu     # E-mail address for notifications
 
-wget --mirror -e robots=on --convert-links --adjust-extension --page-requisites --no-parent --wait=2 --random-wait --limit-rate=200k --reject-regex="(logout|login|signup)" --level=2 https://playmatterstoys.com/
+wget --mirror -e robots=on --convert-links --adjust-extension --page-requisites --no-parent --wait=2 --random-wait --limit-rate=200k --reject-regex="(logout|login|signup|\?add-to-cart=)" --level=2 -I /shop,/product,/product-category -X /add-to-cart https://playmatterstoys.com/
 ```
 
 Afterwards, go back to the job dashboard, then click the green `Submit` button to run the job.
@@ -81,5 +83,5 @@ http-server -p 6767
 ## Performing the Scrape
 Ideally you modify the backend's application properties file [here](https://github.com/radah19/dandeliondb/blob/2ba200384017afd6a19a23bde8b6d3e75407e830/backend/src/main/resources/application.properties#L7)
 ```java
-urltoscrape.urls=http://localhost:6767
+web.urls=http://localhost:6767
 ```
