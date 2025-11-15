@@ -22,7 +22,11 @@ public class KDAScraper {
         return ls;
     }
 
-    private void crawl() {
+    private void crawlShop() {
+
+    }
+
+    private void crawlProductCategory() {
 
     }
 
