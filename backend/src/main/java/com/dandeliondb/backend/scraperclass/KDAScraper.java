@@ -44,11 +44,11 @@ public class KDAScraper {
             Element priceContainer = doc
                     .select(":is(.price) > span > bdi")
                     .first();
-            List<Double> prices = new ArrayList<>();
+            Double price = null;
             if (priceContainer != null) {
-                prices.add(Double.parseDouble(
+                price = Double.parseDouble(
                     priceContainer.text().substring(1)
-                ));
+                );
             }
 
             List<Element> tagsContainer = doc
@@ -78,11 +78,10 @@ public class KDAScraper {
             Element weightContainer = doc
                     .select(":is(#tab-additional_information) > table > tbody > tr:has(:contains(Weight)) > td")
                     .first();
-            List<Double> weights = new ArrayList<>();
+            Double weight = null;
             if (weightContainer != null) {
-                weights.add(Double.parseDouble(
-                        weightContainer.text().split(" ")[0]
-                        )
+                weight = Double.parseDouble(
+                    weightContainer.text().split(" ")[0]
                 );
             }
 
@@ -97,7 +96,7 @@ public class KDAScraper {
                 }
             }
 
-            Product prod = new Product(title, brand, prices, tags, upc, sku, ean, weights, descriptions);
+            Product prod = new Product(title, brand, price, tags, upc, sku, ean, weight, descriptions);
 
             ls.add(prod);
         } catch (Exception e) {

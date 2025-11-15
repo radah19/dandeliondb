@@ -21,23 +21,12 @@ public class Product {
     private String name;
     private String brand;
 
-    /*
-        We want to keep a list of prices in case there is a range of prices
-        we find from scraping. Providing both a range for the price & an average
-        helps
-     */
-    private List<Double> price;
+    private Double price;
     private List<String> tags;
 
     private String upc, sku, ean;
 
-    /*
-        Weights kept as a list as we may also find different weights for the
-        same product.
-
-        For the autofill, we can take the mode or median for the weight list.
-     */
-    private List<Double> weights;
+    private Double weights;
 
     private List<String> descriptions;
 
