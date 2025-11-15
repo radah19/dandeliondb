@@ -51,10 +51,14 @@ public class KDAScraper {
                 ));
             }
 
-            List<String> tags = doc
-                    .select("span:is(.tagged_as) > a")
-                    .removeFirst() // Remove "Tags:" entry
-                    .stream().map(Element::text).toList();
+            List<Element> tagsContainer = doc
+                    .select("span:is(.tagged_as) > a");
+
+            List<String> tags = new ArrayList<>();
+            if (tagsContainer != null && tagsContainer.size() > 0) {
+                tags.addAll(tagsContainer.removeFirst() // Remove "Tags:" entry
+                        .stream().map(Element::text).toList());
+            }
 
             Element productDetailsContainer = doc
                     .select(":is(#tab-stn_product_details) > div > table > tbody").first();
@@ -82,12 +86,15 @@ public class KDAScraper {
                 );
             }
 
-            List<String> descriptions = new ArrayList<>(doc
-                    .select(":is(#tab-description) > p")
-                    .stream().map(Element::text).toList());
-            while (descriptions.size() > 1) { // Current select will grab a list of <p> elements. We want to combine it into one description.
-                String p = descriptions.removeFirst();
-                descriptions.set(0, p + "\n" + descriptions.getFirst());
+            List<Element> descriptionsContainer = doc
+                    .select(":is(#tab-description) > p");
+            List<String> descriptions = new ArrayList<>();
+            if (descriptionsContainer != null) {
+                descriptions = descriptionsContainer.stream().map(Element::text).toList();
+                while (descriptions.size() > 1) { // Current select will grab a list of <p> elements. We want to combine it into one description.
+                    String p = descriptions.removeFirst();
+                    descriptions.set(0, p + "\n" + descriptions.getFirst());
+                }
             }
 
             Product prod = new Product(title, brand, prices, tags, upc, sku, ean, weights, descriptions);
