@@ -5,6 +5,7 @@ import com.dandeliondb.backend.repository.ProductRepository;
 import com.dandeliondb.backend.service.ScrapingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,7 +17,7 @@ public class ScrapingController {
         this.scrapingService = scrapingService;
     }
 
-    @GetMapping(value="/scrape")
+    @PostMapping(value="/scrape")
     public void scrape() {
         scrapingService.run();
     }

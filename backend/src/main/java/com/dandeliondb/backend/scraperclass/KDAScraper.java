@@ -1,8 +1,10 @@
 package com.dandeliondb.backend.scraperclass;
 
 import com.dandeliondb.backend.model.Product;
+import com.dandeliondb.backend.model.ProductResult;
 import com.dandeliondb.backend.utils.MultipartUtils;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.apache.tika.Tika;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,36 +14,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Getter
 @AllArgsConstructor
 public class KDAScraper {
     private static final Tika tika = new Tika();
 
-    private List<Product> products;
-    private List<MultipartFile> images;
-
-    public KDAScraper() {
-        products = new ArrayList<>();
-    }
-
-    public List<Product> scrape(Document doc) {
-        scrapeProduct(doc);
-        return products;
-    }
-
-    private void crawlShop() {
-
-    }
-
-    private void crawlProductCategory() {
-
-    }
-
-    private void scrapeProduct(Document doc) {
+    public ProductResult scrapeProduct(Document doc) {
         try {
             String title = Objects.requireNonNull(doc
                     .select(":is(.product_title)")
@@ -108,11 +92,11 @@ public class KDAScraper {
             }
 
             Product prod = new Product(title, brand, price, tags, upc, sku, ean, weight, descriptions);
-            products.add(prod);
 
             List<Element> imagesContainer = doc
                     .select("figure:is(.woocommerce-product-gallery__wrapper) > div");
 
+            List<MultipartFile> images = new ArrayList<>();
             if (imagesContainer != null && !imagesContainer.isEmpty()) {
                 for (Element e: imagesContainer) {
                     String imgSrc = e.select("img").attr("src");
@@ -128,25 +112,24 @@ public class KDAScraper {
                     Resource resource = response.getBody();
                     if (resource != null) {
                         try (InputStream inputStream = resource.getInputStream()) {
-                            String contentType = tika.detect(inputStream);
-
-                            MultipartFile multipartFile = MultipartUtils.convertToMultipartFile(
-                                    inputStream,
+                            byte[] bytes = resource.getInputStream().readAllBytes();
+                            String contentType = tika.detect(bytes);
+                            MultipartFile multipartFile = new MultipartUtils.SimpleMultipartFile(
+                                    new ByteArrayInputStream(bytes),
                                     imgSrc.substring(imgSrc.lastIndexOf("/") + 1),
                                     contentType
                             );
-
                             images.add(multipartFile);
                         }
                     }
 
-                    Thread.sleep(5000); // 5 second delay to prevent overwhelming the server
+                    Thread.sleep(500); // 5 second delay to prevent overwhelming the server
                 }
-
             }
-
+            return new ProductResult(prod, images);
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            return null;
         }
     }
 }
