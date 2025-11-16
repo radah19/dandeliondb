@@ -1,13 +1,16 @@
 package com.dandeliondb.backend.scraperclass;
 
 import com.dandeliondb.backend.model.Product;
+import com.dandeliondb.backend.utils.MultipartUtils;
 import lombok.AllArgsConstructor;
+import org.apache.tika.Tika;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -16,16 +19,18 @@ import java.util.Objects;
 
 @AllArgsConstructor
 public class KDAScraper {
-    private List<Product> ls;
+    private static final Tika tika = new Tika();
+
+    private List<Product> products;
+    private List<MultipartFile> images;
 
     public KDAScraper() {
-        ls = new ArrayList<>();
+        products = new ArrayList<>();
     }
 
     public List<Product> scrape(Document doc) {
-
         scrapeProduct(doc);
-        return ls;
+        return products;
     }
 
     private void crawlShop() {
@@ -103,10 +108,8 @@ public class KDAScraper {
             }
 
             Product prod = new Product(title, brand, price, tags, upc, sku, ean, weight, descriptions);
-            ls.add(prod);
+            products.add(prod);
 
-            // Grab Images and convert them to input streams
-            List<InputStream> images = new ArrayList<>();
             List<Element> imagesContainer = doc
                     .select("figure:is(.woocommerce-product-gallery__wrapper) > div");
 
@@ -122,11 +125,24 @@ public class KDAScraper {
                             null,
                             Resource.class
                     );
-                    Resource ret = response.getBody();
-                    InputStream inputStream = (ret != null) ? ret.getInputStream() : null;
+                    Resource resource = response.getBody();
+                    if (resource != null) {
+                        try (InputStream inputStream = resource.getInputStream()) {
+                            String contentType = tika.detect(inputStream);
+
+                            MultipartFile multipartFile = MultipartUtils.convertToMultipartFile(
+                                    inputStream,
+                                    imgSrc.substring(imgSrc.lastIndexOf("/") + 1),
+                                    contentType
+                            );
+
+                            images.add(multipartFile);
+                        }
+                    }
 
                     Thread.sleep(5000); // 5 second delay to prevent overwhelming the server
                 }
+
             }
 
         } catch (Exception e) {
