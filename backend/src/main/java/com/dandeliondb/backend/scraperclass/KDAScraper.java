@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-@Getter
 @AllArgsConstructor
 @Getter
 public class KDAScraper {
@@ -218,36 +217,6 @@ public class KDAScraper {
             System.out.println(e.getMessage());
             return null;
         }
-    }
-
-    private boolean isInvalidRoute(String url) {
-        if (!url.contains(currentDomain) || url.contains("add-to-cart")) {
-            return true;
-        }
-
-        for (String s: VALID_ROUTES) {
-            if (url.contains(s)) return false;
-        }
-
-        return true;
-    }
-
-    private String convertLocalUrl(String url) {
-        if(url.contains("https://")) return url;
-
-        while(url.contains("../")) {
-            url = url.substring(url.indexOf("../")+2);
-        }
-
-        if(url.contains("/index.html")) {
-            url = url.substring(0, url.indexOf("/index.html"));
-        }
-
-        if(url.contains("page/")) {
-            url = "/" + url;
-        }
-
-        return "http://localhost:6767" + url;
     }
 
     private boolean isInvalidRoute(String url) {
