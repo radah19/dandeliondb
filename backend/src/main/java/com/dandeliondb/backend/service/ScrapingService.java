@@ -31,16 +31,12 @@ public class ScrapingService  {
         /*
         code TBD!
          */
+        KDAScraper kdaScraper = new KDAScraper();
+        kdaScraper.scrape(url);
+        List<Product> ls = kdaScraper.getLs();
 
-        try {
-            // Grab Document
-            Document document = Jsoup.connect(url).get();
-
-            // Convert Contents to List
-            List<Product> ls = new KDAScraper().scrape(document);
-            this.saveProductsToDB(ls);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        for (Product i: ls) {
+            productRepo.addProduct(i);
         }
     }
 
@@ -52,11 +48,4 @@ public class ScrapingService  {
             System.out.println(e.getMessage());
         }
     }
-
-    private void saveProductsToDB(List<Product> ls) {
-        for (Product i: ls) {
-            productRepo.addProduct(i);
-        }
-    }
-
 }

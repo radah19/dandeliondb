@@ -2,8 +2,11 @@ package com.dandeliondb.backend.scraperclass;
 
 import com.dandeliondb.backend.model.Product;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -11,29 +14,94 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
+@Getter
 public class KDAScraper {
     private List<Product> ls;
+    private HashSet<String> visitedLinks;
+    private String currentDomain;
+
+    private final String[] VALID_ROUTES = {"/shop", "/product-category", "/product"};
 
     public KDAScraper() {
         ls = new ArrayList<>();
+        visitedLinks = new HashSet<>();
     }
 
-    public List<Product> scrape(Document doc) {
+    public void scrape(String url) {
+        currentDomain = url.split("/")[2];
 
-        scrapeProduct(doc);
-        return ls;
+        if (isInvalidRoute(url)) return;
+
+        try {
+            // Get Document
+            Document doc = Jsoup.connect(url).get();
+
+            // Parse Based off type of link (we can expect to always start on shop page, but for specific link
+            // testing when debugging we have the method identify which link it's on)
+            if (url.contains(VALID_ROUTES[0])) {
+                crawlShop(doc);
+            } else if (url.contains(VALID_ROUTES[1])) {
+                crawlProductCategory(doc);
+            } else if (url.contains(VALID_ROUTES[2])) {
+                scrapeProduct(doc);
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
-    private void crawlShop() {
+    private void crawlShop(Document doc) {
+        try {
+            // Get Document
+            Elements linksOnPage = doc.select("a");
+            List<String> urls = linksOnPage.stream().map(i -> i.attr("href")).toList();
+            for (String url: urls) {
+                if (currentDomain.contains("localhost")) url = convertLocalUrl(url);
+                if (isInvalidRoute(url)) continue;
 
+                if (!visitedLinks.contains(url) && url.contains(VALID_ROUTES[1])) {
+                    visitedLinks.add(url);
+                    Document prdCatDoc = Jsoup.connect(url).get();
+                    crawlProductCategory(prdCatDoc);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
-    private void crawlProductCategory() {
+    private void crawlProductCategory(Document doc) {
+        try {
+            // Get Document
+            Elements linksOnPage = doc.select("a");
+            List<String> urls = linksOnPage.stream().map(i -> i.attr("href")).toList();
+            for (String url: urls) {
+                if (currentDomain.contains("localhost")) url = convertLocalUrl(url);
+                if (isInvalidRoute(url)) continue;
 
+                // Next Page URL
+                if (!visitedLinks.contains(url) && url.contains(VALID_ROUTES[1]) && url.contains("/page")) {
+                    visitedLinks.add(url);
+                    Document nextPageDoc = Jsoup.connect(url).get();
+                    crawlProductCategory(nextPageDoc);
+                }
+
+                // Individual Product Element
+                if (!visitedLinks.contains(url) && url.contains(VALID_ROUTES[2])) {
+                    visitedLinks.add(url);
+                    Document prdDoc = Jsoup.connect(url).get();
+                    scrapeProduct(prdDoc);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void scrapeProduct(Document doc) {
@@ -57,7 +125,7 @@ public class KDAScraper {
                 );
             }
 
-            List<Element> tagsContainer = doc
+            Elements tagsContainer = doc
                     .select("span:is(.tagged_as) > a");
 
             List<String> tags = new ArrayList<>();
@@ -91,7 +159,7 @@ public class KDAScraper {
                 );
             }
 
-            List<Element> descriptionsContainer = doc
+            Elements descriptionsContainer = doc
                     .select(":is(#tab-description) > p");
             List<String> descriptions = new ArrayList<>();
             if (descriptionsContainer != null) {
@@ -106,31 +174,61 @@ public class KDAScraper {
             ls.add(prod);
 
             // Grab Images and convert them to input streams
-            List<InputStream> images = new ArrayList<>();
-            List<Element> imagesContainer = doc
-                    .select("figure:is(.woocommerce-product-gallery__wrapper) > div");
-
-            if (imagesContainer != null && !imagesContainer.isEmpty()) {
-                for (Element e: imagesContainer) {
-                    String imgSrc = e.select("img").attr("src");
-                    System.out.println(imgSrc);
-
-                    RestTemplate restTemplate = new RestTemplate();
-                    ResponseEntity<Resource> response = restTemplate.exchange(
-                            imgSrc,
-                            HttpMethod.GET,
-                            null,
-                            Resource.class
-                    );
-                    Resource ret = response.getBody();
-                    InputStream inputStream = (ret != null) ? ret.getInputStream() : null;
-
-                    Thread.sleep(5000); // 5 second delay to prevent overwhelming the server
-                }
-            }
+//            List<InputStream> images = new ArrayList<>();
+//            Elements imagesContainer = doc
+//                    .select("figure:is(.woocommerce-product-gallery__wrapper) > div");
+//
+//            if (imagesContainer != null && !imagesContainer.isEmpty()) {
+//                for (Element e: imagesContainer) {
+//                    String imgSrc = e.select("img").attr("src");
+//                    System.out.println(imgSrc);
+//
+//                    RestTemplate restTemplate = new RestTemplate();
+//                    ResponseEntity<Resource> response = restTemplate.exchange(
+//                            imgSrc,
+//                            HttpMethod.GET,
+//                            null,
+//                            Resource.class
+//                    );
+//                    Resource ret = response.getBody();
+//                    InputStream inputStream = (ret != null) ? ret.getInputStream() : null;
+//
+//                    Thread.sleep(1000); // 1 second delay to prevent overwhelming the server
+//                }
+//            }
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private boolean isInvalidRoute(String url) {
+        if (!url.contains(currentDomain) || url.contains("add-to-cart")) {
+            return true;
+        }
+
+        for (String s: VALID_ROUTES) {
+            if (url.contains(s)) return false;
+        }
+
+        return true;
+    }
+
+    private String convertLocalUrl(String url) {
+        if(url.contains("https://")) return url;
+
+        while(url.contains("../")) {
+            url = url.substring(url.indexOf("../")+2);
+        }
+
+        if(url.contains("/index.html")) {
+            url = url.substring(0, url.indexOf("/index.html"));
+        }
+
+        if(url.contains("page/")) {
+            url = "/" + url;
+        }
+
+        return "http://localhost:6767" + url;
     }
 }
