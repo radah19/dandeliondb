@@ -1,18 +1,25 @@
-package com.dandeliondb.backend.scraperclass;
+package com.dandeliondb.backend.service;
 
 import com.dandeliondb.backend.model.Product;
 import com.dandeliondb.backend.model.ProductResult;
 import com.dandeliondb.backend.repository.ImageRepository;
 import com.dandeliondb.backend.repository.ProductRepository;
+import com.dandeliondb.backend.scraperclass.KDAScraper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
 
-public class KDACrawler {
+@Service
+public class KDAScrapingService {
+    @Value("#{'${web.urls}'.split(',')}")
+    private List<String> urls;
+
     private HashSet<String> visitedLinks;
     private String currentDomain;
     private KDAScraper scraper;
@@ -32,12 +39,18 @@ public class KDACrawler {
 
     private final String[] VALID_ROUTES = {"/shop", "/product-category", "/product"};
 
-    public KDACrawler() {
+    public KDAScrapingService() {
         visitedLinks = new HashSet<>();
         scraper = new KDAScraper();
     }
 
-    public void scrape(String url) {
+    public void run() {
+        for (String url: urls) {
+            scrape(url);
+        }
+    }
+
+    private void scrape(String url) {
         currentDomain = url.split("/")[2];
 
         if (isInvalidRoute(url)) return;
@@ -106,9 +119,13 @@ public class KDACrawler {
                     Document prdDoc = Jsoup.connect(url).get();
 
                     // Scrape Product
+                    System.out.println(url + " from page " + doc.title());
+
                     ProductResult result = scraper.scrapeProduct(prdDoc);
                     Product prod = result.getProduct();
                     productRepo.addProduct(prod);
+
+                    System.out.println("Addedd " + prod.getName());
                     imageRepo.addImages(prod.getName(), prod.getBrand(), result.getImages());
                 }
             }

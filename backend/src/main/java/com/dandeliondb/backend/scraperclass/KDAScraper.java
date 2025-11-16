@@ -104,7 +104,6 @@ public class KDAScraper {
             if (imagesContainer != null && !imagesContainer.isEmpty()) {
                 for (Element e: imagesContainer) {
                     String imgSrc = e.select("img").attr("src");
-                    System.out.println(imgSrc);
 
                     RestTemplate restTemplate = new RestTemplate();
                     ResponseEntity<Resource> response = restTemplate.exchange(
