@@ -126,7 +126,7 @@ public class KDAScraper {
                         }
                     }
 
-                    Thread.sleep(500); // 5 second delay to prevent overwhelming the server
+                    Thread.sleep(7500); // 7.5 second delay to prevent overwhelming the server
                 }
             }
             return new ProductResult(prod, images);
