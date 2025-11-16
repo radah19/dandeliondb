@@ -111,7 +111,7 @@ public class KDAScraper {
         }
     }
 
-    private ProductResult scrapeProduct(Document doc) {
+    public ProductResult scrapeProduct(Document doc) {
         try {
             String title = Objects.requireNonNull(doc
                     .select(":is(.product_title)")
