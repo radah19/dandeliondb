@@ -30,6 +30,7 @@ public class Product {
 
     private List<String> descriptions;
 
+    // image mappings to s3 bucket to allow for fast access
     private List<String> imageURLs;
 
     @DynamoDbPartitionKey

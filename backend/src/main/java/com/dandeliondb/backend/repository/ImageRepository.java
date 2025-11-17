@@ -26,6 +26,30 @@ public class ImageRepository {
         this.s3Presigner = s3Presigner;
     }
 
+    public void addImages(String productName, String brand, List<MultipartFile> files) {
+        for (MultipartFile file : files) {
+            uploadSingleImage(productName, brand, file);
+        }
+    }
+
+    private void uploadSingleImage(String productName, String brand, MultipartFile file) {
+        try {
+            String key = brand + "/" + productName + "/" + file.getOriginalFilename();
+
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(key)
+                    .contentType(file.getContentType())
+                    .contentLength(file.getSize())
+                    .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    /* public URL code 
     public List<String> getPublicUrls(String brand, String productName) {
         ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
                 .bucket(BUCKET_NAME)
@@ -37,8 +61,9 @@ public class ImageRepository {
         return objects.stream()
                 .map(obj -> "https://" + BUCKET_NAME + ".s3.amazonaws.com/" + obj.key())
                 .collect(Collectors.toList());
-    }
+    } */
 
+    /* presigned URL code
     public List<URL> generatePresignedUrls(String brand, String productName) {
         ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
                 .bucket(BUCKET_NAME)
@@ -75,32 +100,9 @@ public class ImageRepository {
                 .build();
 
         return s3Presigner.presignGetObject(presignRequest).url();
-    }
+    } */
 
-    public void addImages(String productName, String brand, List<MultipartFile> files) {
-        for (MultipartFile file : files) {
-            uploadSingleImage(productName, brand, file);
-        }
-    }
-
-    private void uploadSingleImage(String productName, String brand, MultipartFile file) {
-        try {
-            String key = brand + "/" + productName + "/" + file.getOriginalFilename();
-
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
-                    .key(key)
-                    .contentType(file.getContentType())
-                    .contentLength(file.getSize())
-                    .build();
-
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-        } catch (Exception e) {
-            throw new RuntimeException();
-        }
-    }
-
-    /*
+    /* sending image as byte is even slower
     public List<byte[]> getAllImages(String productName, String brand) {
         List<String> keys = listImageKeys(productName, brand);
 
