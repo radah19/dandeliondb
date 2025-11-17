@@ -9,8 +9,6 @@ import java.awt.*;
 import java.net.URL;
 import java.util.List;
 
-// We don't need this anymore. This is just for testing.
-/*
 @RestController
 public class ImageController {
     private ImageRepository imageRepository;
@@ -41,4 +39,3 @@ public class ImageController {
     }
 
 }
-*/

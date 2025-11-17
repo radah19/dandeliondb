@@ -47,7 +47,6 @@ public class ImageRepository {
         }
     }
 
-    /* public URL code
     public List<String> getPublicUrls(String brand, String productName) {
         ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
                 .bucket(BUCKET_NAME)
@@ -59,75 +58,5 @@ public class ImageRepository {
         return objects.stream()
                 .map(obj -> "https://" + BUCKET_NAME + ".s3.amazonaws.com/" + obj.key())
                 .collect(Collectors.toList());
-    } */
-
-    /* presigned URL code
-    public List<URL> generatePresignedUrls(String brand, String productName) {
-        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
-                .bucket(BUCKET_NAME)
-                .prefix(brand + "/" + productName + "/")
-                .build();
-
-        List<S3Object> objects = s3Client.listObjectsV2(listRequest).contents();
-
-        return objects.stream()
-                .map(obj -> presignUrl(obj.key()))
-                .collect(Collectors.toList());
     }
-
-    public URL generatePresignedUrl(String brand, String productName) {
-        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
-                .bucket(BUCKET_NAME)
-                .prefix(brand + "/" + productName + "/")
-                .build();
-
-        List<S3Object> objects = s3Client.listObjectsV2(listRequest).contents();
-
-        return presignUrl(objects.getFirst().key());
-    }
-
-    private URL presignUrl(String key) {
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(BUCKET_NAME)
-                .key(key)
-                .build();
-
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(15))
-                .getObjectRequest(getObjectRequest)
-                .build();
-
-        return s3Presigner.presignGetObject(presignRequest).url();
-    } */
-
-    /* sending image as byte is even slower
-    public List<byte[]> getAllImages(String productName, String brand) {
-        List<String> keys = listImageKeys(productName, brand);
-
-        return keys.stream().map(key -> {
-            GetObjectRequest getReq = GetObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
-                    .key(key)
-                    .build();
-
-            ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(getReq);
-            return objectBytes.asByteArray();
-        }).collect(Collectors.toList());
-    }
-
-    public List<String> listImageKeys(String productName, String brand) {
-        String prefix = brand + "/" + productName + "/";
-
-        ListObjectsV2Request listReq = ListObjectsV2Request.builder()
-                .bucket(BUCKET_NAME)
-                .prefix(prefix)
-                .build();
-
-        ListObjectsV2Response listRes = s3Client.listObjectsV2(listReq);
-
-        return listRes.contents().stream()
-                .map(S3Object::key)
-                .collect(Collectors.toList());
-    } */
-
 }
