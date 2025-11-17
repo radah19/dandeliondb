@@ -17,13 +17,11 @@ import java.util.stream.Collectors;
 @Repository
 public class ImageRepository {
     private final S3Client s3Client;
-    private final S3Presigner s3Presigner;
 
     private static final String BUCKET_NAME = "image-mappings";
 
-    public ImageRepository(S3Client s3Client, S3Presigner s3Presigner) {
+    public ImageRepository(S3Client s3Client) {
         this.s3Client = s3Client;
-        this.s3Presigner = s3Presigner;
     }
 
     public void addImages(String productName, String brand, List<MultipartFile> files) {
@@ -49,7 +47,7 @@ public class ImageRepository {
         }
     }
 
-    /* public URL code 
+    /* public URL code
     public List<String> getPublicUrls(String brand, String productName) {
         ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
                 .bucket(BUCKET_NAME)
