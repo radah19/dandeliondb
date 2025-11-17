@@ -81,14 +81,28 @@ public class KDAScraper {
                 );
             }
 
-            Elements descriptionsContainer = doc
-                    .select(":is(#tab-description) > p");
+            Element descRoot = doc.select("#tab-description").first();
             List<String> descriptions = new ArrayList<>();
-            if (descriptionsContainer != null) {
-                descriptions = new ArrayList<>(descriptionsContainer.stream().map(Element::text).toList());
-                while (descriptions.size() > 1) { // Current select will grab a list of <p> elements. We want to combine it into one description.
-                    String p = descriptions.removeFirst();
-                    descriptions.set(0, p + "\n" + descriptions.getFirst());
+
+            if (descRoot != null) {
+                for (Element child : descRoot.children()) {
+
+                    if (child.tagName().equals("p")) {
+                        descriptions.add(child.text());
+                    }
+
+                    else if (child.tagName().equals("ul")) {
+                        for (Element li : child.select("> li")) {
+                            descriptions.add("• " + li.text());
+                        }
+                    }
+                }
+                if (!descriptions.isEmpty()) {
+                    String combined =
+                            String.join("\n", descriptions);
+
+                    descriptions.clear();
+                    descriptions.add(combined);
                 }
             }
             List<Element> imagesContainer = doc
