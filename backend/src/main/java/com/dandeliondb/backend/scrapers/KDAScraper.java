@@ -1,11 +1,8 @@
-package com.dandeliondb.backend.scraperclass;
+package com.dandeliondb.backend.scrapers;
 
 import com.dandeliondb.backend.model.Product;
 import com.dandeliondb.backend.model.ProductResult;
 import com.dandeliondb.backend.utils.MultipartUtils;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.jsoup.Jsoup;
 import lombok.Getter;
 import org.apache.tika.Tika;
 import org.jsoup.nodes.Document;
@@ -20,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,6 +24,7 @@ import java.util.Objects;
 public class KDAScraper {
 
     private static final Tika tika = new Tika();
+    private static final String BUCKET_NAME = "image-mappings";
 
     public ProductResult scrapeProduct(Document doc) {
         try {
@@ -94,13 +91,11 @@ public class KDAScraper {
                     descriptions.set(0, p + "\n" + descriptions.getFirst());
                 }
             }
-
-            Product prod = new Product(title, brand, price, tags, upc, sku, ean, weight, descriptions);
-
             List<Element> imagesContainer = doc
                     .select("figure:is(.woocommerce-product-gallery__wrapper) > div");
 
             List<MultipartFile> images = new ArrayList<>();
+            List<String> imageURLs = new ArrayList<>();
             if (imagesContainer != null && !imagesContainer.isEmpty()) {
                 for (Element e: imagesContainer) {
                     String imgSrc = e.select("img").attr("src");
@@ -116,19 +111,25 @@ public class KDAScraper {
                     if (resource != null) {
                         try (InputStream inputStream = resource.getInputStream()) {
                             byte[] bytes = resource.getInputStream().readAllBytes();
+                            String fileName = imgSrc.substring(imgSrc.lastIndexOf("/") + 1);
                             String contentType = tika.detect(bytes);
+                            String s3Key = brand + "/" + title + "/" + fileName;
                             MultipartFile multipartFile = new MultipartUtils.SimpleMultipartFile(
                                     new ByteArrayInputStream(bytes),
-                                    imgSrc.substring(imgSrc.lastIndexOf("/") + 1),
+                                    fileName,
                                     contentType
                             );
                             images.add(multipartFile);
+                            String publicUrl = "https://" + BUCKET_NAME + ".s3.amazonaws.com/" + s3Key;
+                            imageURLs.add(publicUrl);
                         }
                     }
 
                     Thread.sleep(7500); // 7.5 second delay to prevent overwhelming the server
                 }
             }
+            Product prod = new Product(title, brand, price, tags, upc, sku, ean, weight, descriptions, imageURLs);
+
             return new ProductResult(prod, images);
         } catch (Exception e) {
             System.out.println(e.getMessage());

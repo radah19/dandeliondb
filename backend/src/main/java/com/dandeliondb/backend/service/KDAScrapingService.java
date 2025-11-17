@@ -4,7 +4,7 @@ import com.dandeliondb.backend.model.Product;
 import com.dandeliondb.backend.model.ProductResult;
 import com.dandeliondb.backend.repository.ImageRepository;
 import com.dandeliondb.backend.repository.ProductRepository;
-import com.dandeliondb.backend.scraperclass.KDAScraper;
+import com.dandeliondb.backend.scrapers.KDAScraper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -20,9 +20,9 @@ public class KDAScrapingService {
     @Value("#{'${web.urls}'.split(',')}")
     private List<String> urls;
 
-    private HashSet<String> visitedLinks;
+    private final HashSet<String> visitedLinks;
     private String currentDomain;
-    private KDAScraper scraper;
+    private final KDAScraper scraper;
 
     private ProductRepository productRepo;
     private ImageRepository imageRepo;
@@ -68,8 +68,8 @@ public class KDAScrapingService {
             } else if (url.contains(VALID_ROUTES[2])) {
                 ProductResult result = scraper.scrapeProduct(doc);
                 Product prod = result.getProduct();
-                productRepo.addProduct(prod);
                 imageRepo.addImages(prod.getName(), prod.getBrand(), result.getImages());
+                productRepo.addProduct(prod);
             }
 
         } catch (Exception e) {
@@ -138,10 +138,10 @@ public class KDAScrapingService {
 
                     ProductResult result = scraper.scrapeProduct(prdDoc);
                     Product prod = result.getProduct();
+                    imageRepo.addImages(prod.getName(), prod.getBrand(), result.getImages());
                     productRepo.addProduct(prod);
 
                      System.out.println("Added " + prod.getName());
-                    imageRepo.addImages(prod.getName(), prod.getBrand(), result.getImages());
                 }
             }
         } catch (Exception e) {

@@ -29,9 +29,9 @@ public class ImageController {
     }
 
     @GetMapping(value="/images/{brand}/{name}")
-    public List<URL> getImages(@PathVariable String brand, @PathVariable String name) {
+    public List<String> getImages(@PathVariable String brand, @PathVariable String name) {
         try {
-            return imageRepository.generatePresignedUrls(brand, name);
+            return imageRepository.getPublicUrls(brand, name);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return null;

@@ -30,6 +30,8 @@ public class Product {
 
     private List<String> descriptions;
 
+    private List<String> imageURLs;
+
     @DynamoDbPartitionKey
     public String getName() {
         return name;

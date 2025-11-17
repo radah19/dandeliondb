@@ -26,6 +26,19 @@ public class ImageRepository {
         this.s3Presigner = s3Presigner;
     }
 
+    public List<String> getPublicUrls(String brand, String productName) {
+        ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
+                .bucket(BUCKET_NAME)
+                .prefix(brand + "/" + productName + "/")
+                .build();
+
+        List<S3Object> objects = s3Client.listObjectsV2(listRequest).contents();
+
+        return objects.stream()
+                .map(obj -> "https://" + BUCKET_NAME + ".s3.amazonaws.com/" + obj.key())
+                .collect(Collectors.toList());
+    }
+
     public List<URL> generatePresignedUrls(String brand, String productName) {
         ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
                 .bucket(BUCKET_NAME)
