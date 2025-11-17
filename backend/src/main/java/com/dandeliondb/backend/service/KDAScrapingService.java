@@ -84,12 +84,27 @@ public class KDAScrapingService {
             List<String> urls = linksOnPage.stream().map(i -> i.attr("href")).toList();
             for (String url: urls) {
                 if (currentDomain.contains("localhost")) url = convertLocalUrl(url);
-                if (isInvalidRoute(url)) continue;
+                if (isInvalidRoute(url) || visitedLinks.contains(url)) continue;
 
-                if (!visitedLinks.contains(url) && url.contains(VALID_ROUTES[1])) {
+
+                // Next Page URL
+                if (url.contains(VALID_ROUTES[0]) && url.contains("/page")) {
+                    visitedLinks.add(url);
+                    Document nextPageDoc = Jsoup.connect(url).get();
+                    crawlProductCategory(nextPageDoc);
+                }
+
+                // Product Category page
+                else if (url.contains(VALID_ROUTES[1])) {
                     visitedLinks.add(url);
                     Document prdCatDoc = Jsoup.connect(url).get();
                     crawlProductCategory(prdCatDoc);
+                }
+
+                // Product page (regular products can be on shop page)
+                else if (url.contains(VALID_ROUTES[2])) {
+                    visitedLinks.add(url);
+
                 }
             }
         } catch (Exception e) {
@@ -100,32 +115,32 @@ public class KDAScrapingService {
     private void crawlProductCategory(Document doc) {
         try {
             // Get Document
-            Elements linksOnPage = doc.select("a");
+            Elements linksOnPage = doc.select("div:is(.ast-woocommerce-container) > ul").select("a");
             List<String> urls = linksOnPage.stream().map(i -> i.attr("href")).toList();
             for (String url: urls) {
                 if (currentDomain.contains("localhost")) url = convertLocalUrl(url);
-                if (isInvalidRoute(url)) continue;
+                if (isInvalidRoute(url) || visitedLinks.contains(url)) continue;
 
                 // Next Page URL
-                if (!visitedLinks.contains(url) && url.contains(VALID_ROUTES[1]) && url.contains("/page")) {
+                if (url.contains(VALID_ROUTES[1]) && url.contains("/page")) {
                     visitedLinks.add(url);
                     Document nextPageDoc = Jsoup.connect(url).get();
                     crawlProductCategory(nextPageDoc);
                 }
 
                 // Individual Product Element
-                if (!visitedLinks.contains(url) && url.contains(VALID_ROUTES[2])) {
+                else if (url.contains(VALID_ROUTES[2])) {
                     visitedLinks.add(url);
                     Document prdDoc = Jsoup.connect(url).get();
 
                     // Scrape Product
-                    System.out.println(url + " from page " + doc.title());
+                     System.out.println(url + " from page " + doc.title());
 
                     ProductResult result = scraper.scrapeProduct(prdDoc);
                     Product prod = result.getProduct();
                     productRepo.addProduct(prod);
 
-                    System.out.println("Addedd " + prod.getName());
+                     System.out.println("Added " + prod.getName());
                     imageRepo.addImages(prod.getName(), prod.getBrand(), result.getImages());
                 }
             }
