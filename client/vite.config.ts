@@ -14,13 +14,5 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_FRONTEND_URL': JSON.stringify(env.FRONTEND_URL),
       'import.meta.env.VITE_PORT': JSON.stringify(env.PORT)
     },
-    server: {
-      proxy: {
-        '/api': {
-          target: env.BACKEND_URL,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-        },
-      }
-    },
   }
 })

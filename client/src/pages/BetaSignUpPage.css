@@ -120,3 +120,10 @@
     font-size: 2rem;
   }
 }
+
+.beta-signup-p-text {
+  font-family: "Goudy Bookletter 1911", serif;
+  font-size: 1.0rem;
+  color: #9c8000;
+  font-weight: 400;
+}

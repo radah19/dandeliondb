@@ -6,6 +6,8 @@ import com.dandeliondb.backend.repository.AuthRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AuthService {
     private AuthRepository authRepo;
@@ -21,7 +23,7 @@ public class AuthService {
         return result.verified;
     }
 
-    public User getUserByEmail(String email) {
+    public List<User> getUserByEmail(String email) {
         return authRepo.getUserByEmail(email);
     }
 

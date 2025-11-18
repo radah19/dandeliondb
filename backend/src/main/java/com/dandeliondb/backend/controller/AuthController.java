@@ -2,10 +2,14 @@ package com.dandeliondb.backend.controller;
 
 import com.dandeliondb.backend.model.User;
 import com.dandeliondb.backend.service.AuthService;
+import com.dandeliondb.backend.utils.JSONParser;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class AuthController {
@@ -18,8 +22,13 @@ public class AuthController {
 
 
     @PostMapping("/signup")
-    public ResponseEntity<String> createAccount(@RequestBody String email, @RequestBody String password) {
-        boolean result = authService.addUser(email, password);
+    public ResponseEntity<String> createAccount(@RequestBody String body) {
+        JSONObject json = JSONParser.parse(body, new String[]{"email", "password"});
+        if (json == null) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Bad JSON Provided! (CODE 406)\n");
+        }
+
+        boolean result = authService.addUser(json.getString("email"), json.getString("password"));
 
         if (result) {
             return ResponseEntity.status(HttpStatus.CREATED).body("User account successfully created (CODE 201)\n");
@@ -29,14 +38,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody String email, @RequestBody String password) {
-        User expected = authService.getUserByEmail(email);
+    public ResponseEntity<String> login(@RequestBody String body) {
+        JSONObject json = JSONParser.parse(body, new String[]{"email", "password"});
+        if (json == null) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Bad JSON Provided! (CODE 406)\n");
+        }
 
-        if (expected == null) {
+        List<User> expected = authService.getUserByEmail(json.getString("email"));
+
+        if (expected.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Provided email not found (CODE 404)\n");
         }
 
-        boolean result = authService.verifyPassword(password, expected.getPassword());
+        User expectedUser = expected.getFirst();
+
+        boolean result = authService.verifyPassword(json.getString("password"), expectedUser.getPassword());
 
         if (result) {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("User valid (CODE 202)\n");
@@ -46,7 +62,13 @@ public class AuthController {
     }
 
     @PostMapping("/waitlist-signup")
-    public void addWaitlistEmail(@RequestBody String email) {
-        authService.addWaitlistEmail(email);
+    public ResponseEntity<String> addWaitlistEmail(@RequestBody String body) {
+        JSONObject json = JSONParser.parse(body, new String[]{"email"});
+        if (json == null) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Bad JSON Provided! (CODE 406)\n");
+        }
+
+        authService.addWaitlistEmail(json.getString("email"));
+        return ResponseEntity.status(HttpStatus.OK).body("Email added to waitlist! (CODE 200)\n");
     }
 }

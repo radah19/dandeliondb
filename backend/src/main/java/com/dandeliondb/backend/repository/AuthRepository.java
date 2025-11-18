@@ -9,23 +9,25 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 
+import java.util.List;
+
 @Repository
 public class AuthRepository {
 
     private final DynamoDbEnhancedClient enhancedClient;
     private final DynamoDbTable<User> userTable;
-    private final DynamoDbTable<String> waitlistTable;
+    private final DynamoDbTable<User> waitlistTable;
 
     private static final String USER_TABLE_NAME = "users";
     private static final String WAITLIST_TABLE_NAME = "waitlist";
 
-    public AuthRepository(DynamoDbEnhancedClient enhancedClient, DynamoDbTable<User> userTable, DynamoDbTable<User> waitlistTable) {
+    public AuthRepository(DynamoDbEnhancedClient enhancedClient) {
         this.enhancedClient = enhancedClient;
         this.userTable = enhancedClient.table(USER_TABLE_NAME, TableSchema.fromBean(User.class));
-        this.waitlistTable = enhancedClient.table(WAITLIST_TABLE_NAME, TableSchema.fromBean(String.class));
+        this.waitlistTable = enhancedClient.table(WAITLIST_TABLE_NAME, TableSchema.fromBean(User.class));
     }
 
-    public User getUserByEmail(String email) {
+    public List<User> getUserByEmail(String email) {
         Key key = Key.builder()
                     .partitionValue(email)
                     .build();
@@ -35,12 +37,12 @@ public class AuthRepository {
         return userTable.query(queryConditional)
                 .items()
                 .stream()
-                .toList().getFirst();
+                .toList();
     }
 
     public boolean addUser(String email, String password) {
         // User already exists!
-        if (getUserByEmail(email) != null) {
+        if (!getUserByEmail(email).isEmpty()) {
             return false;
         }
 
@@ -51,6 +53,6 @@ public class AuthRepository {
     }
 
     public void addWaitlistEmail(String email) {
-        waitlistTable.putItem(email);
+        waitlistTable.putItem(new User(email, null));
     }
 }
