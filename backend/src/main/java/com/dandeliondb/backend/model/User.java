@@ -13,5 +13,5 @@ import java.math.BigInteger;
 @DynamoDbBean
 public class User {
     private String email;
-    private String firstName;
+    private String password;
 }
