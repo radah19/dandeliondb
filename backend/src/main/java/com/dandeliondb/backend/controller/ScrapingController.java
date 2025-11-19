@@ -14,8 +14,8 @@ public class ScrapingController {
         this.scrapingService = scrapingService;
     }
 
-    @PostMapping(value="/scrape")
-    public void scrape() {
-        scrapingService.run();
-    }
+//    @PostMapping(value="/scrape")
+//    public void scrape() {
+//        scrapingService.run();
+//    }
 }
