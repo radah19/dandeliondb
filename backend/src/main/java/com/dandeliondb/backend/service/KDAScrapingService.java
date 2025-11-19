@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.*;
 import java.util.HashSet;
 import java.util.List;
 
@@ -20,12 +21,14 @@ public class KDAScrapingService {
     @Value("#{'${web.urls}'.split(',')}")
     private List<String> urls;
 
-    private final HashSet<String> visitedLinks;
+    private HashSet<String> visitedLinks;
     private String currentDomain;
     private final KDAScraper scraper;
 
     private ProductRepository productRepo;
     private ImageRepository imageRepo;
+
+    private String saveFileCurrentPage;
 
     @Autowired
     public void setImageRepo(ImageRepository imageRepo) {
@@ -45,6 +48,8 @@ public class KDAScrapingService {
     }
 
     public void run() {
+        deserializeVisitedLinks();
+
         for (String url: urls) {
             scrape(url);
         }
@@ -90,6 +95,7 @@ public class KDAScrapingService {
                 // Next Page URL
                 if (url.contains(VALID_ROUTES[0]) && url.contains("/page")) {
                     visitedLinks.add(url);
+                    this.serializeVisitedLinks();
                     Document nextPageDoc = Jsoup.connect(url).get();
                     crawlProductCategory(nextPageDoc);
                 }
@@ -97,6 +103,7 @@ public class KDAScrapingService {
                 // Product Category page
                 else if (url.contains(VALID_ROUTES[1])) {
                     visitedLinks.add(url);
+                    this.serializeVisitedLinks();
                     Document prdCatDoc = Jsoup.connect(url).get();
                     crawlProductCategory(prdCatDoc);
                 }
@@ -104,7 +111,14 @@ public class KDAScrapingService {
                 // Product page (regular products can be on shop page)
                 else if (url.contains(VALID_ROUTES[2])) {
                     visitedLinks.add(url);
+                    this.serializeVisitedLinks();
 
+                    Document prdDoc = Jsoup.connect(url).get();
+
+                    ProductResult result = scraper.scrapeProduct(prdDoc);
+                    Product prod = result.getProduct();
+                    imageRepo.addImages(prod.getName(), prod.getBrand(), result.getImages());
+                    productRepo.addProduct(prod);
                 }
             }
         } catch (Exception e) {
@@ -124,6 +138,8 @@ public class KDAScrapingService {
                 // Next Page URL
                 if (url.contains(VALID_ROUTES[1]) && url.contains("/page")) {
                     visitedLinks.add(url);
+                    this.serializeVisitedLinks();
+
                     Document nextPageDoc = Jsoup.connect(url).get();
                     crawlProductCategory(nextPageDoc);
                 }
@@ -131,6 +147,8 @@ public class KDAScrapingService {
                 // Individual Product Element
                 else if (url.contains(VALID_ROUTES[2])) {
                     visitedLinks.add(url);
+                    this.serializeVisitedLinks();
+
                     Document prdDoc = Jsoup.connect(url).get();
 
                     // Scrape Product
@@ -177,5 +195,31 @@ public class KDAScrapingService {
         }
 
         return "http://localhost:6767" + url;
+    }
+
+    private void serializeVisitedLinks() {
+        try {
+            FileOutputStream fileOut = new FileOutputStream("visited_links.ser");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(visitedLinks);
+            out.close();
+            fileOut.close();
+            System.out.println("Serialized data is saved in visited_links.ser");
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+    }
+
+    private void deserializeVisitedLinks() {
+        try {
+            FileInputStream fileIn = new FileInputStream("visited_links.ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            visitedLinks = (HashSet<String>) in.readObject();
+            in.close();
+            fileIn.close();
+            System.out.println("Deserialized HashSet: " + visitedLinks);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
