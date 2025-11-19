@@ -85,7 +85,7 @@ public class KDAScrapingService {
     private void crawlShop(Document doc) {
         try {
             // Get Document
-            Elements linksOnPage = doc.select("a");
+            Elements linksOnPage = doc.select("div:is(.ast-woocommerce-container)").select("a");
             List<String> urls = linksOnPage.stream().map(i -> i.attr("href")).toList();
             for (String url: urls) {
                 if (currentDomain.contains("localhost")) url = convertLocalUrl(url);
@@ -129,7 +129,7 @@ public class KDAScrapingService {
     private void crawlProductCategory(Document doc) {
         try {
             // Get Document
-            Elements linksOnPage = doc.select("div:is(.ast-woocommerce-container) > ul").select("a");
+            Elements linksOnPage = doc.select("div:is(.ast-woocommerce-container)").select("a");
             List<String> urls = linksOnPage.stream().map(i -> i.attr("href")).toList();
             for (String url: urls) {
                 if (currentDomain.contains("localhost")) url = convertLocalUrl(url);
@@ -142,6 +142,14 @@ public class KDAScrapingService {
 
                     Document nextPageDoc = Jsoup.connect(url).get();
                     crawlProductCategory(nextPageDoc);
+                }
+
+                // Another Product Category
+                else if (url.contains(VALID_ROUTES[1])) {
+                    visitedLinks.add(url);
+                    this.serializeVisitedLinks();
+                    Document prdCatDoc = Jsoup.connect(url).get();
+                    crawlProductCategory(prdCatDoc);
                 }
 
                 // Individual Product Element
