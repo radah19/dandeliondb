@@ -15,6 +15,8 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@types/validator": "^13.15.10",
+    "http-status-codes": "^2.3.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "validator": "^13.15.23"
