@@ -1,5 +1,8 @@
 import { useState, useEffect, FormEvent } from 'react';
 import './App.css';
+import { apiClient } from '../services/api';
+import { StatusCodes } from 'http-status-codes';
+import validator from 'validator';
 
 type View = 'login' | 'home';
 
@@ -27,7 +30,7 @@ function App() {
   const [detectedFields, setDetectedFields] = useState<string[]>([]);
 
   // login form state
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   // check current tab URL on mount and when popup opens
@@ -59,9 +62,32 @@ function App() {
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
     // TODO: implement auth with backend
-    console.log('Login:', { username, password });
-    setIsAuthenticated(true);
-    setView('home');
+    console.log('Login:', { email, password });
+
+    if (!validator.isEmail(email)) {
+      console.log("Email not provided!");
+      return;
+    }
+
+    apiClient.fetch("/login", {
+      method: "POST",
+      body: JSON.stringify({
+          email: email,
+          password: password
+      })
+    }).then(result => {
+      console.log("Result ", result);
+
+      if(result.status != StatusCodes.ACCEPTED) {
+        // Login Failed
+        console.log("SADNESS!!");
+      } else {
+        // Login Successful!
+        setIsAuthenticated(true);
+        setView('home');
+      }
+    });
+
   };
 
   const handleSearch = async (e: FormEvent) => {
@@ -154,13 +180,13 @@ function App() {
         <div className="content">
           <form onSubmit={handleLogin} className="login-form">
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="email">Email</label>
               <input
                 type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email"
                 required
               />
             </div>

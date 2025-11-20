@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.List;
+
 @SpringBootApplication
 public class BackendApplication {
 
@@ -17,12 +19,21 @@ public class BackendApplication {
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
-            @Value("${frontend.url}")
-            private String frontend_url;
+            @Value("#{'${frontend.urls}'.split(',')}")
+            private List<String> frontend_urls;
+
+            @Value("#{'${browser_ext.urls}'.split(',')}")
+            private List<String> browser_ext_urls;
 
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins(frontend_url);
+                for (String s: frontend_urls) {
+                    registry.addMapping("/**").allowedOrigins(s);
+                }
+
+                for (String s: browser_ext_urls) {
+                    registry.addMapping("/**").allowedOrigins(s);
+                }
             }
         };
     }

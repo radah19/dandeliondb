@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import { apiClient } from '../services/api';
 import validator from 'validator';
+import { StatusCodes } from 'http-status-codes';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,19 +17,23 @@ function LoginPage() {
 
     if (!validator.isEmail(email)) {
       console.log("Email not provided!");
+      return;
     }
 
     apiClient.fetch("/login", {
       method: "POST",
-      headers: {
-          "Content-type": "application/json"
-        },
       body: JSON.stringify({
           email: email,
           password: password
       })
     }).then(result => {
-      console.log("Result ", result);
+      if(result.status != StatusCodes.ACCEPTED) {
+        // Login Failed
+        console.log("SADNESS!!");
+      } else {
+        // Login Successful!
+        console.log("Yipee!");
+      }
     });
 
   };

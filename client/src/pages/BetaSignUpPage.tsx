@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './BetaSignUpPage.css';
 import { apiClient } from '../services/api';
+import { StatusCodes } from 'http-status-codes';
+import validator from 'validator';
 
 function BetaSignUpPage() {
   const navigate = useNavigate();
@@ -23,16 +25,24 @@ function BetaSignUpPage() {
     e.preventDefault();
     console.log('Beta signup:', formData);
 
+      if (!validator.isEmail(formData.email)) {
+        console.log("Email not provided!");
+        return;
+      }
+
     apiClient.fetch("/waitlist-signup", {
       method: "POST",
-      headers: {
-          "Content-type": "application/json"
-        },
       body: JSON.stringify({
           email: formData.email
       })
     }).then(result => {
-      console.log("Result ", result);
+      if(result.status != StatusCodes.OK) {
+        // Waitlist signup Failed
+        console.log("SADNESS!!");
+      } else {
+        // Waitlist signup Successful!
+        console.log("Yipee!");
+      }
     });
       
   };
