@@ -1,4 +1,4 @@
-# Frontend Set up guide
+# Browser Extension Set up guide
 ## Setup
 This be easy!
 - Open the `.env_template` file, copy & paste into the same directory and then name it to `.env`
