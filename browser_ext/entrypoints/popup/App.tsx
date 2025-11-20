@@ -37,8 +37,8 @@ function App() {
         if (tabs[0]?.url) {
           const url = tabs[0].url.toLowerCase();
           setCurrentUrl(tabs[0].url);
-          // check if on lightspeed or bigcommerce
-          const isSupported = url.includes('lightspeed') || url.includes('bigcommerce');
+          // check if on lightspeed or bigcommerce. first one may not be needed
+          const isSupported = url.includes('lightspeed') || url.includes('bigcommerce') || url.includes('merchantos');
           setIsSupportedPlatform(isSupported);
           
           // Detect fields on the page by sending message to background
