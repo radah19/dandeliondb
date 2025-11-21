@@ -30,7 +30,7 @@ public class ProductController {
     @GetMapping(value="/product/{name}")
     public List<Product> getProductByName(@PathVariable String name) {
         try {
-            return productRepository.getProductByName(name);
+            return productRepository.getProductsByName(name);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return null;
