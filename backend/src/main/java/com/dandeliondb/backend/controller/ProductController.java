@@ -37,7 +37,7 @@ public class ProductController {
 
             if (products == null || products.isEmpty()) {
                 return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
+                        .status(HttpStatus.OK)
                         .body(new ArrayList<>());
             }
 

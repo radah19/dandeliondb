@@ -20,7 +20,6 @@ export default defineContentScript({
         description: null as HTMLTextAreaElement | null,
         brand: null as HTMLInputElement | null,
         price: null as HTMLInputElement | null,
-        quantity: null as HTMLInputElement | null,
       };
 
       const inputs = document.querySelectorAll<HTMLInputElement>('input');
@@ -42,7 +41,7 @@ export default defineContentScript({
 
         const allText = `${id} ${name} ${placeholder} ${label} ${ariaLabel} ${dataName} ${className}`;
 
-        // match product name (thanks ai this looks horrible)
+        // match product name
         if (!fields.productName && allText.match(/product[\s_-]?name|item[\s_-]?name|\btitle\b|product[\s_-]?title|name\b/)) {
           fields.productName = input;
         }
@@ -61,10 +60,6 @@ export default defineContentScript({
         // Match Price
         else if (!fields.price && allText.match(/\bprice\b|cost|amount|retail|msrp|\$|dollar/)) {
           fields.price = input;
-        }
-        // Match Quantity
-        else if (!fields.quantity && allText.match(/\bqty\b|quantity|stock|inventory|amount|count/)) {
-          fields.quantity = input;
         }
       });
 
@@ -149,10 +144,9 @@ export default defineContentScript({
       fillField(fields.productName, productData.name);
       fillField(fields.upc, productData.upc);
       fillField(fields.sku, productData.sku);
-      fillField(fields.description, productData.description);
+      fillField(fields.description, productData.descriptions?.[0]);
       fillField(fields.brand, productData.brand);
       fillField(fields.price, productData.price);
-      fillField(fields.quantity, productData.quantity);
 
       console.log(`[DandelionDB] Auto-filled ${filledCount} fields`);
       return filledCount;
