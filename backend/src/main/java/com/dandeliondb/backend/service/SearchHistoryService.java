@@ -27,11 +27,19 @@ public class SearchHistoryService {
 
     public List<Product> getMostRecentSearches(String email) {
         List<SearchHistory> history = searchHistoryRepo.getRecentSearches(email, 20);
-        List<Product> products = new ArrayList<>();
+        List<Product> productKeys = new ArrayList<>();
         for (SearchHistory searchHistory : history) {
-            products.add(productRepo.getProductByNameAndBrand(searchHistory.getName(), searchHistory.getBrand()));
+            Product key = new Product();
+            key.setName(searchHistory.getName());
+            key.setBrand(searchHistory.getBrand());
+            productKeys.add(key);
+            System.out.println(key.getName());
         }
 
-        return products;
+        return productRepo.batchGetProducts(productKeys);
+    }
+
+    public void addSearch(SearchHistory searchHistory) {
+        searchHistoryRepo.addSearch(searchHistory);
     }
 }

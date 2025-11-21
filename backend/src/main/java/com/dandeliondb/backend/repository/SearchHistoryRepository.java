@@ -43,5 +43,4 @@ public class SearchHistoryRepository {
                 .stream()
                 .toList();
     }
-
 }

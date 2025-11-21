@@ -7,7 +7,10 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetResultPageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.ReadBatch;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,6 +64,29 @@ public class ProductRepository {
         product.setName(name);
         product.setBrand(brand);
         return productTable.getItem(product);
+    }
+
+    // batch all products in a single request
+    public List<Product> batchGetProducts(List<Product> productKeys) {
+        if (productKeys == null || productKeys.isEmpty()) {
+            return List.of();
+        }
+
+        ReadBatch.Builder<Product> readBatchBuilder = ReadBatch.builder(Product.class)
+                .mappedTableResource(productTable);
+
+        for (Product productKey : productKeys) {
+            readBatchBuilder.addGetItem(productKey);
+        }
+
+        BatchGetItemEnhancedRequest batchRequest = BatchGetItemEnhancedRequest.builder()
+                .addReadBatch(readBatchBuilder.build())
+                .build();
+
+        BatchGetResultPageIterable batchResults = enhancedClient.batchGetItem(batchRequest);
+
+        return batchResults.resultsForTable(productTable).stream()
+                .collect(Collectors.toList());
     }
 
     private List<Product> getAllProducts() {
