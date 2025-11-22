@@ -141,15 +141,16 @@ function App() {
       });
       
       if (response?.success && response.fieldsFilled > 0) {
-        alert(`✓ Successfully auto-filled ${response.fieldsFilled} fields!`);
         try {
-        await apiClient.fetch(
-          `/search/${encodeURIComponent(email)}/${encodeURIComponent(selectedProduct.name)}/${encodeURIComponent(selectedProduct.brand)}`,
-          { method: 'POST' }
-        );
-      } catch (err) {
-        console.warn('[DandelionDB] Failed to track search history:', err);
-      }
+          await apiClient.fetch(
+            `/search/${encodeURIComponent(email)}/${encodeURIComponent(selectedProduct.name)}/${encodeURIComponent(selectedProduct.brand)}`,
+            { method: 'POST' }
+          );
+        } catch (err) {
+          console.warn('[DandelionDB] Failed to track search history:', err);
+          // Don't fail the autofill if tracking fails
+        }
+        alert(`✓ Successfully auto-filled ${response.fieldsFilled} fields!`);
       } else {
         // don't show alert - user can see the issue from lack of visual feedback
         console.warn('[DandelionDB] No fields filled. Make sure you\'re on a product form page.');
