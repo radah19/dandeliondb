@@ -2,6 +2,8 @@ export default defineContentScript({
   matches: ['*://*/*'], // match all pages
   allFrames: true, // run in iframes too
   main() {
+    console.log('[DandelionDB Content Script] Loaded on:', window.location.href);
+    
     const currentUrl = window.location.href.toLowerCase();
     const isLightspeed = currentUrl.includes('lightspeed');
     const isBigCommerce = currentUrl.includes('bigcommerce');
@@ -17,11 +19,35 @@ export default defineContentScript({
         productName: null as HTMLInputElement | null,
         upc: null as HTMLInputElement | null,
         sku: null as HTMLInputElement | null,
-        description: null as HTMLTextAreaElement | null,
+        description: null as HTMLTextAreaElement | HTMLInputElement | null,
         brand: null as HTMLInputElement | null,
         price: null as HTMLInputElement | null,
       };
 
+      // Try Lightspeed-specific IDs first
+      if (isLightspeed) {
+        fields.description = document.querySelector<HTMLInputElement>('#view_description');
+        fields.upc = document.querySelector<HTMLInputElement>('input#view_upc[name="upc"]');
+        fields.sku = document.querySelector<HTMLInputElement>('#view_shop_sku') || 
+                     document.querySelector<HTMLInputElement>('#view_man_sku');
+        fields.brand = document.querySelector<HTMLInputElement>('#react-select-2-input'); // Brand autocomplete
+        fields.price = document.querySelector<HTMLInputElement>('#view_price_default');
+        
+        // Return early if we found Lightspeed fields
+        if (fields.description || fields.upc || fields.sku) {
+          console.log('[DandelionDB] Detected Lightspeed fields:', {
+            description: !!fields.description,
+            upc: !!fields.upc,
+            sku: !!fields.sku,
+            brand: !!fields.brand,
+            price: !!fields.price
+          });
+          console.log('[DandelionDB] UPC field element:', fields.upc);
+          return fields;
+        }
+      }
+
+      // Generic field detection fallback
       const inputs = document.querySelectorAll<HTMLInputElement>('input');
       const textareas = document.querySelectorAll<HTMLTextAreaElement>('textarea');
 
@@ -42,7 +68,7 @@ export default defineContentScript({
         const allText = `${id} ${name} ${placeholder} ${label} ${ariaLabel} ${dataName} ${className}`;
 
         // match product name
-        if (!fields.productName && allText.match(/product[\s_-]?name|item[\s_-]?name|\btitle\b|product[\s_-]?title|name\b/)) {
+        if (!fields.productName && allText.match(/product[\s_-]?name|item[\s_-]?name|\btitle\b|product[\s_-]?title|name\b|description/)) {
           fields.productName = input;
         }
         // Match UPC
@@ -175,6 +201,14 @@ export default defineContentScript({
     }
 
     function autofillFields(productData: any, settings: any = null) {
+      console.log('[DandelionDB] autofillFields called with:', { 
+        productData, 
+        settings,
+        currentUrl: window.location.href,
+        isLightspeed,
+        isBigCommerce
+      });
+      
       const fields = detectProductFields();
       let filledCount = 0;
 
@@ -190,11 +224,32 @@ export default defineContentScript({
       };
 
       // helper to fill field and trigger events
-      const fillField = (field: HTMLInputElement | HTMLTextAreaElement | null, value: any) => {
+      const fillField = (field: HTMLInputElement | HTMLTextAreaElement | null, value: any, fieldName?: string) => {
         if (field && value != null) {
+          console.log(`[DandelionDB] Filling ${fieldName || 'field'}:`, {
+            id: field.id,
+            name: field.getAttribute('name'),
+            value: value.toString()
+          });
+          
           field.value = value.toString();
+          
+          // Trigger standard events
           field.dispatchEvent(new Event('input', { bubbles: true }));
           field.dispatchEvent(new Event('change', { bubbles: true }));
+          field.dispatchEvent(new Event('keyup', { bubbles: true }));
+          
+          // Lightspeed-specific: set dx property and trigger viewFieldChanged
+          if (isLightspeed) {
+            (field as any).dx = true;
+            
+            // Try to trigger jQuery change event if available
+            if ((window as any).$ && (window as any).$(field).length) {
+              (window as any).$(field).trigger('change');
+              (window as any).$(field).trigger('keyup');
+            }
+          }
+          
           // visual feedback
           field.style.outline = '3px solid #4CAF50';
           field.style.outlineOffset = '2px';
@@ -208,12 +263,21 @@ export default defineContentScript({
         }
       };
 
-      if (autofillSettings.name) fillField(fields.productName, productData.name);
-      if (autofillSettings.upc) fillField(fields.upc, productData.upc);
-      if (autofillSettings.sku) fillField(fields.sku, productData.sku);
-      if (autofillSettings.description) fillField(fields.description, productData.descriptions?.[0]);
-      if (autofillSettings.brand) fillField(fields.brand, productData.brand);
-      if (autofillSettings.price) fillField(fields.price, productData.price);
+      if (autofillSettings.name) fillField(fields.productName, productData.name, 'productName');
+      if (autofillSettings.upc) fillField(fields.upc, productData.upc, 'upc');
+      if (autofillSettings.sku) fillField(fields.sku, productData.sku, 'sku');
+      if (autofillSettings.description) fillField(fields.description, productData.descriptions?.[0], 'description');
+      if (autofillSettings.brand && fields.brand) {
+        // Special handling for Lightspeed brand autocomplete
+        if (isLightspeed && fields.brand.id === 'react-select-2-input') {
+          fillField(fields.brand, productData.brand, 'brand');
+          // Trigger keydown to show dropdown suggestions
+          fields.brand.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowDown' }));
+        } else {
+          fillField(fields.brand, productData.brand, 'brand');
+        }
+      }
+      if (autofillSettings.price) fillField(fields.price, productData.price, 'price');
 
       // Add images from URLs if enabled
       if (autofillSettings.images && productData.imageURLs && productData.imageURLs.length > 0) {
@@ -221,6 +285,7 @@ export default defineContentScript({
         addImagesFromUrls(productData.imageURLs);
       }
 
+      console.log(`[DandelionDB] Autofill completed. Fields filled: ${filledCount}`);
       return filledCount;
     }
 
