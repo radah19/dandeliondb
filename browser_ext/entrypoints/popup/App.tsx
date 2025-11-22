@@ -11,11 +11,13 @@ interface Product {
   name: string;
   upc: string;
   sku: string;
-  description: string;
+  descriptions: string[];
   brand: string;
   price: number;
-  quantity: number;
-  imageUrl?: string;
+  imageURLs: string[];
+  ean?: string | null;
+  tags?: string[];
+  weights?: any;
 }
 
 function App() {
@@ -97,47 +99,27 @@ function App() {
     setIsSearching(true);
     setSearchResults([]);
     setSelectedProduct(null);
-    
-    // TODO: replace with actual API call to backend
-    // simulate API call with multiple sample results
-    setTimeout(() => {
-      setSearchResults([
-        {
-          id: 1,
-          name: 'LEGO Star Wars Millennium Falcon',
-          upc: '673419353908',
-          sku: 'LEGO-75257',
-          description: 'Iconic Star Wars ship building set with 1,351 pieces. Features opening cockpit, rotating gun turrets, and detailed interior.',
-          brand: 'LEGO',
-          price: 159.99,
-          quantity: 5,
-          imageUrl: 'https://via.placeholder.com/150?text=LEGO+Falcon'
-        },
-        {
-          id: 2,
-          name: 'LEGO Star Wars X-Wing Fighter',
-          upc: '673419318150',
-          sku: 'LEGO-75301',
-          description: 'Build and display the iconic X-Wing Starfighter from Star Wars. 474 pieces.',
-          brand: 'LEGO',
-          price: 49.99,
-          quantity: 12,
-          imageUrl: 'https://via.placeholder.com/150?text=LEGO+X-Wing'
-        },
-        {
-          id: 3,
-          name: 'LEGO Star Wars TIE Fighter',
-          upc: '673419340267',
-          sku: 'LEGO-75300',
-          description: 'Recreate epic Star Wars battles with this TIE Fighter building set. 432 pieces.',
-          brand: 'LEGO',
-          price: 39.99,
-          quantity: 8,
-          imageUrl: 'https://via.placeholder.com/150?text=LEGO+TIE'
+    try {
+      const res = await apiClient.fetch(`/product/${encodeURIComponent(searchQuery)}`, { method: 'GET' });
+
+      if (!res.ok) {
+        console.error('[DandelionDB] Search request failed', res.status);
+        setSearchResults([]);
+      } else {
+        const data = await res.json();
+        console.log(data);
+        if (Array.isArray(data)) {
+          setSearchResults(data);
+        } else {
+          setSearchResults([]);
         }
-      ]);
+      }
+    } catch (err) {
+      console.error('[DandelionDB] Error searching products:', err);
+      setSearchResults([]);
+    } finally {
       setIsSearching(false);
-    }, 800);
+    }
   };
 
   const handleProductSelect = (product: Product) => {
@@ -159,7 +141,15 @@ function App() {
       });
       
       if (response?.success && response.fieldsFilled > 0) {
-        alert(`✓ Successfully auto-filled ${response.fieldsFilled} fields!`);
+        try {
+          await apiClient.fetch(
+            `/search/${encodeURIComponent(email)}/${encodeURIComponent(selectedProduct.name)}/${encodeURIComponent(selectedProduct.brand)}`,
+            { method: 'POST' }
+          );
+        } catch (err) {
+          console.warn('[DandelionDB] Failed to track search history:', err);
+          // Don't fail the autofill if tracking fails
+        }
       } else {
         // don't show alert - user can see the issue from lack of visual feedback
         console.warn('[DandelionDB] No fields filled. Make sure you\'re on a product form page.');
@@ -263,7 +253,7 @@ function App() {
                         onClick={() => handleProductSelect(product)}
                       >
                         <div className="product-image">
-                          <img src={product.imageUrl} alt={product.name} />
+                          <img src={product.imageURLs?.[0] || ''} alt={product.name} />
                         </div>
                         <div className="product-info">
                           <h4 className="product-name">{product.name}</h4>
@@ -283,9 +273,9 @@ function App() {
                     ← Back to Results
                   </button>
                   <div className="product-card">
-                    {selectedProduct.imageUrl && (
+                    {selectedProduct.imageURLs?.[0] && (
                       <div className="product-image-large">
-                        <img src={selectedProduct.imageUrl} alt={selectedProduct.name} />
+                        <img src={selectedProduct.imageURLs[0]} alt={selectedProduct.name} />
                       </div>
                     )}
                     <h3>{selectedProduct.name}</h3>
@@ -306,13 +296,9 @@ function App() {
                         <span className="label">Price:</span>
                         <span className="value">${selectedProduct.price}</span>
                       </div>
-                      <div className="detail-row">
-                        <span className="label">Quantity:</span>
-                        <span className="value">{selectedProduct.quantity}</span>
-                      </div>
                       <div className="description">
                         <span className="label">Description:</span>
-                        <p className="value">{selectedProduct.description}</p>
+                        <p className="value">{selectedProduct.descriptions?.[0] || 'No description available'}</p>
                       </div>
                     </div>
                     <button onClick={handleAutofill} className="btn btn-success btn-large">
