@@ -13,6 +13,40 @@ body {
   font-size: 18px;
 }
 
+* {
+  scrollbar-width: thin; 
+  scrollbar-color: #F2D863 #FAF9F6; 
+}
+
+*::-webkit-scrollbar {
+  width: 4px; 
+}
+
+*::-webkit-scrollbar-track {
+  background: #FAF9F6;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    transparent 35%,
+    #F2D863 35%,
+    #F2D863 65%,
+    transparent 65%
+  );
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    to bottom,
+    transparent 35%,
+    #e6c84f 35%,
+    #e6c84f 65%,
+    transparent 65%
+  );
+}
+
 .container {
   width: 400px;
   min-height: 500px;
@@ -502,13 +536,78 @@ body {
   color: #000;
 }
 
+/* Image Carousel */
+.product-image-carousel {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.carousel-btn {
+  background: #F2D863;
+  border: none;
+  color: #000;
+  font-size: 1.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.carousel-btn:hover:not(:disabled) {
+  background: #e6c84f;
+  transform: scale(1.1);
+}
+
+.carousel-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dot:hover {
+  background: #999;
+}
+
+.dot.active {
+  background: #F2D863;
+  width: 10px;
+  height: 10px;
+}
+
 .product-image-large {
   width: 100%;
   height: 200px;
   border-radius: 8px;
   overflow: hidden;
   background: #f5f5f5;
-  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;

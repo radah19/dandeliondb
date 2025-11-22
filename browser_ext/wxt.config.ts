@@ -6,5 +6,8 @@ export default defineConfig({
   manifest: {
     permissions: ['tabs', 'activeTab', 'webNavigation'],
     host_permissions: ['*://*/*']
+  },
+  runner: {
+    disabled: true  // Disable auto-opening browser
   }
 });

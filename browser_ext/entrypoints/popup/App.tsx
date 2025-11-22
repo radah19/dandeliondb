@@ -30,6 +30,7 @@ function App() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detectedFields, setDetectedFields] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // login form state
   const [email, setEmail] = useState('');
@@ -124,10 +125,26 @@ function App() {
 
   const handleProductSelect = (product: Product) => {
     setSelectedProduct(product);
+    setCurrentImageIndex(0); // Reset to first image when selecting a product
   };
 
   const handleBackToResults = () => {
     setSelectedProduct(null);
+    setCurrentImageIndex(0);
+  };
+
+  const handleNextImage = () => {
+    if (selectedProduct?.imageURLs) {
+      setCurrentImageIndex((prev) => (prev + 1) % selectedProduct.imageURLs.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (selectedProduct?.imageURLs) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? selectedProduct.imageURLs.length - 1 : prev - 1
+      );
+    }
   };
 
   const handleAutofill = async () => {
@@ -273,9 +290,36 @@ function App() {
                     ← Back to Results
                   </button>
                   <div className="product-card">
-                    {selectedProduct.imageURLs?.[0] && (
-                      <div className="product-image-large">
-                        <img src={selectedProduct.imageURLs[0]} alt={selectedProduct.name} />
+                    {selectedProduct.imageURLs && selectedProduct.imageURLs.length > 0 && (
+                      <div className="product-image-carousel">
+                        <div className="product-image-large">
+                          <img src={selectedProduct.imageURLs[currentImageIndex]} alt={selectedProduct.name} />
+                        </div>
+                        {selectedProduct.imageURLs.length > 1 && (
+                          <div className="carousel-controls">
+                            <button 
+                              className="carousel-btn prev" 
+                              onClick={handlePrevImage}
+                            >
+                              ‹
+                            </button>
+                            <div className="carousel-dots">
+                              {selectedProduct.imageURLs.map((_, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className={`dot ${idx === currentImageIndex ? 'active' : ''}`}
+                                  onClick={() => setCurrentImageIndex(idx)}
+                                />
+                              ))}
+                            </div>
+                            <button 
+                              className="carousel-btn next" 
+                              onClick={handleNextImage}
+                            >
+                              ›
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                     <h3>{selectedProduct.name}</h3>
