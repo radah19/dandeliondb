@@ -174,9 +174,20 @@ export default defineContentScript({
       return null;
     }
 
-    function autofillFields(productData: any) {
+    function autofillFields(productData: any, settings: any = null) {
       const fields = detectProductFields();
       let filledCount = 0;
+
+      // Default to all fields enabled if no settings provided
+      const autofillSettings = settings || {
+        name: true,
+        upc: true,
+        sku: true,
+        brand: true,
+        price: true,
+        quantity: true,
+        description: true
+      };
 
       // helper to fill field and trigger events
       const fillField = (field: HTMLInputElement | HTMLTextAreaElement | null, value: any) => {
@@ -197,18 +208,18 @@ export default defineContentScript({
         }
       };
 
-      fillField(fields.productName, productData.name);
-      fillField(fields.upc, productData.upc);
-      fillField(fields.sku, productData.sku);
-      fillField(fields.description, productData.descriptions?.[0]);
-      fillField(fields.brand, productData.brand);
-      fillField(fields.price, productData.price);
+      if (autofillSettings.name) fillField(fields.productName, productData.name);
+      if (autofillSettings.upc) fillField(fields.upc, productData.upc);
+      if (autofillSettings.sku) fillField(fields.sku, productData.sku);
+      if (autofillSettings.description) fillField(fields.description, productData.descriptions?.[0]);
+      if (autofillSettings.brand) fillField(fields.brand, productData.brand);
+      if (autofillSettings.price) fillField(fields.price, productData.price);
 
-      // // Add images from URLs
-      // if (productData.imageURLs && productData.imageURLs.length > 0) {
-      //   console.log("image upload");
-      //   addImagesFromUrls(productData.imageURLs);
-      // }
+      // Add images from URLs if enabled
+      if (autofillSettings.images && productData.imageURLs && productData.imageURLs.length > 0) {
+        console.log("[DandelionDB] Starting image upload...");
+        addImagesFromUrls(productData.imageURLs);
+      }
 
       return filledCount;
     }
@@ -217,7 +228,7 @@ export default defineContentScript({
     // Listen for messages from popup
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === 'FILL_FORM') {
-        const filled = autofillFields(message.product);
+        const filled = autofillFields(message.product, message.autofillSettings);
         sendResponse({ success: true, fieldsFilled: filled });
       } else if (message.type === 'DETECT_FIELDS') {
         const fields = detectProductFields();

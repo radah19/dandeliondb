@@ -3,6 +3,10 @@ import './App.css';
 import { apiClient } from '../services/api';
 import { StatusCodes } from 'http-status-codes';
 import validator from 'validator';
+import prevIcon from '../../assets/prev-image.svg';
+import nextIcon from '../../assets/next-image.svg';
+import downloadIcon from '../../assets/download-image.svg';
+import settingsIcon from '../../assets/autofill-settings.svg';
 
 type View = 'login' | 'home';
 
@@ -31,10 +35,24 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detectedFields, setDetectedFields] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [lastSearchQuery, setLastSearchQuery] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [autofillFields, setAutofillFields] = useState({
+    name: true,
+    upc: true,
+    sku: true,
+    brand: true,
+    price: true,
+    quantity: true,
+    description: true,
+    images: true
+  });
 
   // login form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   // check current tab URL on mount and when popup opens
   useEffect(() => {
@@ -64,11 +82,12 @@ function App() {
 
   const handleLogin = (e: FormEvent) => {
     e.preventDefault();
-    // TODO: implement auth with backend
+    setLoginError(''); // Clear any previous errors
+    
     console.log('Login:', { email, password });
 
     if (!validator.isEmail(email)) {
-      console.log("Email not provided!");
+      setLoginError("Please enter a valid email address");
       return;
     }
 
@@ -83,12 +102,16 @@ function App() {
 
       if(result.status != StatusCodes.ACCEPTED) {
         // Login Failed
-        console.log("SADNESS!!");
+        setLoginError("Incorrect username or password");
       } else {
         // Login Successful!
         setIsAuthenticated(true);
         setView('home');
+        setLoginError('');
       }
+    }).catch(err => {
+      console.error("Login error:", err);
+      setLoginError("Unable to connect. Please try again.");
     });
 
   };
@@ -97,11 +120,14 @@ function App() {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
+    const queryToSearch = searchQuery.trim();
     setIsSearching(true);
     setSearchResults([]);
     setSelectedProduct(null);
+    setHasSearched(false);
+    setLastSearchQuery(queryToSearch);
     try {
-      const res = await apiClient.fetch(`/product/${encodeURIComponent(searchQuery)}`, { method: 'GET' });
+      const res = await apiClient.fetch(`/product/${encodeURIComponent(queryToSearch)}`, { method: 'GET' });
 
       if (!res.ok) {
         console.error('[DandelionDB] Search request failed', res.status);
@@ -120,6 +146,7 @@ function App() {
       setSearchResults([]);
     } finally {
       setIsSearching(false);
+      setHasSearched(true);
     }
   };
 
@@ -150,11 +177,23 @@ function App() {
   const handleAutofill = async () => {
     if (!selectedProduct) return;
 
+    // create a filtered product object with only selected fields
+    const filteredProduct: any = {};
+    
+    if (autofillFields.name) filteredProduct.name = selectedProduct.name;
+    if (autofillFields.upc) filteredProduct.upc = selectedProduct.upc;
+    if (autofillFields.sku) filteredProduct.sku = selectedProduct.sku;
+    if (autofillFields.brand) filteredProduct.brand = selectedProduct.brand;
+    if (autofillFields.price) filteredProduct.price = selectedProduct.price;
+    if (autofillFields.description) filteredProduct.descriptions = selectedProduct.descriptions;
+    if (autofillFields.images) filteredProduct.imageURLs = selectedProduct.imageURLs;
+
     try {
       // send message to background script which will forward to all frames
       const response = await browser.runtime.sendMessage({
         type: 'FILL_FORM',
-        product: selectedProduct
+        product: filteredProduct,
+        autofillSettings: autofillFields
       });
       
       if (response?.success && response.fieldsFilled > 0) {
@@ -211,6 +250,11 @@ function App() {
             <button type="submit" className="btn btn-primary">
               Login
             </button>
+            {loginError && (
+              <div className="error-message">
+                {loginError}
+              </div>
+            )}
           </form>
         </div>
       </div>
@@ -258,6 +302,14 @@ function App() {
                 </button>
               </form>
 
+              {/* no results */}
+              {hasSearched && searchResults.length === 0 && !selectedProduct && !isSearching && (
+                <div className="no-results">
+                  <p>No products found for "{lastSearchQuery}"</p>
+                  <p className="no-results-hint">Try searching with a different name, UPC, or SKU</p>
+                </div>
+              )}
+
               {/* Search Results Grid */}
               {searchResults.length > 0 && !selectedProduct && (
                 <div className="search-results">
@@ -283,7 +335,7 @@ function App() {
                 </div>
               )}
 
-              {/* Selected Product Detail */}
+              {/* selected Product detail */}
               {selectedProduct && (
                 <div className="product-detail">
                   <button onClick={handleBackToResults} className="btn-back">
@@ -295,31 +347,42 @@ function App() {
                         <div className="product-image-large">
                           <img src={selectedProduct.imageURLs[currentImageIndex]} alt={selectedProduct.name} />
                         </div>
-                        {selectedProduct.imageURLs.length > 1 && (
-                          <div className="carousel-controls">
-                            <button 
-                              className="carousel-btn prev" 
-                              onClick={handlePrevImage}
-                            >
-                              ‹
-                            </button>
-                            <div className="carousel-dots">
-                              {selectedProduct.imageURLs.map((_, idx) => (
-                                <span 
-                                  key={idx} 
-                                  className={`dot ${idx === currentImageIndex ? 'active' : ''}`}
-                                  onClick={() => setCurrentImageIndex(idx)}
-                                />
-                              ))}
+                        <div className="carousel-controls">
+                          <div className="carousel-spacer"></div>
+                          {selectedProduct.imageURLs.length > 1 && (
+                            <div className="carousel-nav">
+                              <button 
+                                className="carousel-btn prev" 
+                                onClick={handlePrevImage}
+                              >
+                                <img src={prevIcon} alt="Previous" />
+                              </button>
+                              <div className="carousel-dots">
+                                {selectedProduct.imageURLs.map((_, idx) => (
+                                  <span 
+                                    key={idx} 
+                                    className={`dot ${idx === currentImageIndex ? 'active' : ''}`}
+                                    onClick={() => setCurrentImageIndex(idx)}
+                                  />
+                                ))}
+                              </div>
+                              <button 
+                                className="carousel-btn next" 
+                                onClick={handleNextImage}
+                              >
+                                <img src={nextIcon} alt="Next" />
+                              </button>
                             </div>
-                            <button 
-                              className="carousel-btn next" 
-                              onClick={handleNextImage}
-                            >
-                              ›
-                            </button>
-                          </div>
-                        )}
+                          )}
+                          <a 
+                            href={selectedProduct.imageURLs[currentImageIndex]} 
+                            download
+                            className="download-btn"
+                            title="Download image"
+                          >
+                            <img src={downloadIcon} alt="Download" />
+                          </a>
+                        </div>
                       </div>
                     )}
                     <h3>{selectedProduct.name}</h3>
@@ -345,9 +408,96 @@ function App() {
                         <p className="value">{selectedProduct.descriptions?.[0] || 'No description available'}</p>
                       </div>
                     </div>
-                    <button onClick={handleAutofill} className="btn btn-success btn-large">
-                      Autofill Form
-                    </button>
+                    <div className="product-actions">
+                      <div className="autofill-container">
+                        <div className="autofill-header">
+                          <button onClick={handleAutofill} className="btn btn-success btn-large">
+                            Autofill Form
+                          </button>
+                          <button 
+                            onClick={() => setShowSettings(!showSettings)} 
+                            className="btn-settings"
+                            title="Autofill Settings"
+                          >
+                            <img src={settingsIcon} alt="Settings" />
+                          </button>
+                        </div>
+                        {showSettings && (
+                          <div className="settings-panel">
+                            <h4>Select Fields to Autofill</h4>
+                            <div className="settings-checkboxes">
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={autofillFields.name}
+                                  onChange={(e) => setAutofillFields({...autofillFields, name: e.target.checked})}
+                                />
+                                <span>Product Name</span>
+                              </label>
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={autofillFields.upc}
+                                  onChange={(e) => setAutofillFields({...autofillFields, upc: e.target.checked})}
+                                />
+                                <span>UPC</span>
+                              </label>
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={autofillFields.sku}
+                                  onChange={(e) => setAutofillFields({...autofillFields, sku: e.target.checked})}
+                                />
+                                <span>SKU</span>
+                              </label>
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={autofillFields.brand}
+                                  onChange={(e) => setAutofillFields({...autofillFields, brand: e.target.checked})}
+                                />
+                                <span>Brand</span>
+                              </label>
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={autofillFields.price}
+                                  onChange={(e) => setAutofillFields({...autofillFields, price: e.target.checked})}
+                                />
+                                <span>Price</span>
+                              </label>
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={autofillFields.quantity}
+                                  onChange={(e) => setAutofillFields({...autofillFields, quantity: e.target.checked})}
+                                />
+                                <span>Quantity</span>
+                              </label>
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={autofillFields.description}
+                                  onChange={(e) => setAutofillFields({...autofillFields, description: e.target.checked})}
+                                />
+                                <span>Description</span>
+                              </label>
+                              <label className="checkbox-label">
+                                <input
+                                  type="checkbox"
+                                  checked={autofillFields.images}
+                                  onChange={(e) => setAutofillFields({...autofillFields, images: e.target.checked})}
+                                />
+                                <span>Images</span>
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <button className="btn btn-flag">
+                        🚩 Flag Content
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
