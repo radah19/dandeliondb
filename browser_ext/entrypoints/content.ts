@@ -81,6 +81,63 @@ export default defineContentScript({
       return fields;
     }
 
+    function addImagesFromUrls(imageUrls: string[]) {
+      if (!imageUrls || imageUrls.length === 0) return;
+
+      // get addURL button
+      const addFromUrlButton = document.querySelector('button[ng-click="$ctrl.addFromUrl()"]') as HTMLButtonElement;
+      
+      if (!addFromUrlButton) {
+        console.warn('Add from URL button not found');
+        return;
+      }
+
+      imageUrls.forEach((url, index) => {
+        setTimeout(() => {
+          // Click the button for each url
+          addFromUrlButton.click();
+          
+          // Wait for modal to appear and fill in the URL
+          setTimeout(() => {
+            const urlInput = document.querySelector('input#upload-url') as HTMLInputElement;
+            const saveButton = document.querySelector('button.button--primary[ng-click="$ctrl.save()"]') as HTMLButtonElement;
+            
+            if (urlInput && saveButton) {
+              // Set the URL value
+              urlInput.value = url;
+              
+              // Angular BS
+              urlInput.dispatchEvent(new Event('input', { bubbles: true }));
+              urlInput.dispatchEvent(new Event('change', { bubbles: true }));
+              
+              const angularElement = (window as any).angular?.element(urlInput);
+              if (angularElement) {
+                const scope = angularElement.scope();
+                if (scope && scope.$ctrl && scope.$ctrl.onUrlChange) {
+                  scope.$ctrl.onUrlChange();
+                  scope.$apply();
+                }
+              }
+              
+              // Wait for preview to load, then click Save
+              setTimeout(() => {
+                if (!saveButton.disabled) {
+                  saveButton.click();
+                  console.log(`[DandelionDB] Added image ${index + 1}/${imageUrls.length}: ${url}`);
+                                
+                } else {
+                  console.warn(`Save button disabled for image: ${url}`);
+                
+                }
+              }, 1000); 
+            } else {
+              console.warn('Could not find URL input or Save button in modal');
+            }
+          }, 500); 
+        }, index * 2500); 
+      });
+    }
+
     // helper to find label text for an input
     function findLabelForInput(input: HTMLElement): string | null {
       if (input.id) {
@@ -117,7 +174,6 @@ export default defineContentScript({
       return null;
     }
 
-    // function to autofill detected fields
     function autofillFields(productData: any) {
       const fields = detectProductFields();
       let filledCount = 0;
@@ -148,7 +204,12 @@ export default defineContentScript({
       fillField(fields.brand, productData.brand);
       fillField(fields.price, productData.price);
 
-      console.log(`[DandelionDB] Auto-filled ${filledCount} fields`);
+      // // Add images from URLs
+      // if (productData.imageURLs && productData.imageURLs.length > 0) {
+      //   console.log("image upload");
+      //   addImagesFromUrls(productData.imageURLs);
+      // }
+
       return filledCount;
     }
 

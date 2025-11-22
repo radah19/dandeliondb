@@ -150,7 +150,6 @@ function App() {
           console.warn('[DandelionDB] Failed to track search history:', err);
           // Don't fail the autofill if tracking fails
         }
-        alert(`✓ Successfully auto-filled ${response.fieldsFilled} fields!`);
       } else {
         // don't show alert - user can see the issue from lack of visual feedback
         console.warn('[DandelionDB] No fields filled. Make sure you\'re on a product form page.');
