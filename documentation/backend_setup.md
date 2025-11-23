@@ -10,6 +10,11 @@ We have an IAM account for us to all globally access. Work with someone who has 
 - After setting that up, copy the access key and region values, they'll be added into the environment configuration for the backend (covered later)
 - Get the AWS secret key also from someone, it's a secret so we can't retrieve it from the AWS site 🤫
 - Should be set up on AWS afteerwards! We use S3 and DynamoDB
+## Redis Access
+Our Redis server is on our Railway dashboard! You'll just need to grab the variables from the Redis server's secret variables menu, and put them into your environment file/config.
+- `REDIS_HOST` is `interchange.proxy.rlwy.net`
+- `REDIS_PORT` is `33558`
+- Grab `REDIS_PASSWORD` from Railway!
 ## Adding Env Variables to Intellij
 - First, install the Maven dependencies by going into the `pom.xml` & downloading all sources/packages.
      - If you're using IntelliJ, there should just be a button in the top right of the `pom.xml` file that lets you do this, otherwise you may have to search up how to install the Maven dependencies.

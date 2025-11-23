@@ -2,6 +2,7 @@ package com.dandeliondb.backend.controller;
 
 import com.dandeliondb.backend.model.User;
 import com.dandeliondb.backend.service.AuthService;
+import com.dandeliondb.backend.service.SessionService;
 import com.dandeliondb.backend.utils.JSONParser;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,15 @@ import java.util.List;
 @RestController
 public class AuthController {
     private AuthService authService;
+    private SessionService sessionService;
 
     @Autowired
     public void setAuthService(AuthService authService) {
         this.authService = authService;
     }
+
+    @Autowired
+    public void setSessionService(SessionService sessionService) {this.sessionService = sessionService;}
 
 
     @PostMapping("/signup")
@@ -70,5 +75,40 @@ public class AuthController {
 
         authService.addWaitlistEmail(json.getString("email"));
         return ResponseEntity.status(HttpStatus.OK).body("Email added to waitlist! (CODE 200)\n");
+    }
+
+    @PostMapping("/session-login")
+    public ResponseEntity<String> sessionLogin(@RequestBody String body) {
+        JSONObject json = JSONParser.parse(body, new String[]{"email","sessionId"});
+        if (json == null) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Bad JSON Provided! (CODE 406)\n");
+        }
+
+        boolean success = sessionService.sessionExists(json.getString("email"), json.getString("sessionId"));
+
+        if (!success) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Bad session (CODE 401)\n");
+        } else {
+            return ResponseEntity.status(HttpStatus.OK).body("Session accepted (CODE 200)\n");
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestBody String body) {
+        JSONObject json = JSONParser.parse(body, new String[]{"email"});
+        if (json == null) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Bad JSON Provided! (CODE 406)\n");
+        }
+
+        deleteSession(json.getString("email"));
+        return ResponseEntity.status(HttpStatus.OK).body("Logout complete (CODE 200)\n");
+    }
+
+    private void createSession(String email) {
+        sessionService.createSession(email);
+    }
+
+    private void deleteSession(String email) {
+        sessionService.deleteSession(email);
     }
 }
