@@ -4,7 +4,7 @@ import { defineConfig } from 'wxt';
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    permissions: ['tabs', 'activeTab', 'webNavigation'],
+    permissions: ['tabs', 'activeTab', 'webNavigation', 'storage'],
     host_permissions: ['*://*/*']
   },
   runner: {

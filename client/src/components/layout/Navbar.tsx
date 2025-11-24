@@ -26,8 +26,7 @@ function Navbar({user, setUser}: Props) {
       } else {
         // Logout Successful!
         console.log("Yipee!");
-        result.text().then(body => {
-
+        result.text().then(() => {
           setUser({
             email: ""
           })

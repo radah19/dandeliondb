@@ -56,6 +56,32 @@ function App() {
 
   // check current tab URL on mount and when popup opens
   useEffect(() => {
+    // Perform Sign in if session exists
+    storage.getItem<SessionUserType>('local:sessionUser').then((result) => {
+      if (result && result.email && result.sessionId) {
+        apiClient.fetch("/session-login", {
+            method: "POST",
+            body: JSON.stringify({
+                email: result.email,
+                sessionId: result.sessionId
+            })
+        }).then(result => {
+            if(result.status != StatusCodes.OK) {
+                // Login Failed
+                console.log("SADNESS!!");
+            } else {
+                // Login Successful!
+                console.log("Yipee!");
+                setEmail(email);
+                        
+                setIsAuthenticated(true);
+                setView('home');
+                setLoginError('');
+            }
+      });
+    }
+    });
+
     if (typeof browser !== 'undefined') {
       browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
         if (tabs[0]?.url) {
@@ -105,6 +131,16 @@ function App() {
         setLoginError("Incorrect username or password");
       } else {
         // Login Successful!
+        result.text().then(async (body) => {
+          await storage.setItem('local:sessionUser', {
+            email: email,
+            sessionId: body.split("\n")[1]
+          });
+
+          setEmail(email);
+          setPassword("");
+        });
+
         setIsAuthenticated(true);
         setView('home');
         setLoginError('');
@@ -141,10 +177,45 @@ function App() {
       } else {
         // Login Successful!
         console.log("Yipee!");
+
+        result.text().then(async (body) => {
+          await storage.setItem('local:sessionUser', {
+            email: email,
+            sessionId: body.split("\n")[1]
+          });
+
+          setEmail(email);
+          setPassword("");
+        });
+
+        setIsAuthenticated(true);
+        setView('home');
       }
     });
 
   };
+
+  const handleLogout = (e: FormEvent) => {
+    e.preventDefault();
+
+    apiClient.fetch("/logout", {
+      method: "POST",
+      body: JSON.stringify({
+          email: email,
+      })
+    }).then(result => {
+      if(result.status != StatusCodes.OK) {
+        // Logout Failed
+        console.log("SADNESS!!");
+      } else {
+        // Logout Successful!
+        console.log("Yipee!");
+        result.text().then(() => {
+          setIsAuthenticated(false)
+        });
+      }
+    });
+  }
 
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
@@ -297,7 +368,7 @@ function App() {
       <div className="container">
         <div className="header">
           <h1>DandelionDB</h1>
-          <button className="logout-btn" onClick={() => setIsAuthenticated(false)}>
+          <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
         </div>
@@ -559,3 +630,8 @@ function App() {
 }
 
 export default App;
+
+interface SessionUserType {
+  email: string;
+  sessionId: string;
+}
