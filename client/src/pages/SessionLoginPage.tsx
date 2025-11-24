@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SignUpPage.css';
 import { apiClient } from '../services/api';
@@ -7,12 +7,6 @@ import { getCookie } from 'typescript-cookie';
 
 function SessionLoginPage({setUser, setVerifyingLoginSession}: SessionProps) {
     const navigate = useNavigate();
-
-    const cookieOptions = {    
-        secure: true,
-        sameSite: 'Strict',
-        path: '/'
-    };
 
     useEffect(() => {
         const sessionUser = getCookie("sessionUser");
