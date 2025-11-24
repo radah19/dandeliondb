@@ -2,10 +2,10 @@ import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import './Layout.css';
 
-function Layout() {
+function Layout({user, setUser}: Props) {
   return (
     <div className="layout">
-      <Navbar />
+      <Navbar user={user} setUser={setUser} />
       <main className="main-content">
         <Outlet />
       </main>
@@ -14,3 +14,8 @@ function Layout() {
 }
 
 export default Layout;
+
+interface Props {
+  user: any,
+  setUser: (a: any) => void;
+}

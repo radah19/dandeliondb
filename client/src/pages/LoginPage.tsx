@@ -4,8 +4,9 @@ import './LoginPage.css';
 import { apiClient } from '../services/api';
 import validator from 'validator';
 import { StatusCodes } from 'http-status-codes';
+import { setCookie } from 'typescript-cookie';
 
-function LoginPage() {
+function LoginPage({setUser}: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -33,6 +34,19 @@ function LoginPage() {
       } else {
         // Login Successful!
         console.log("Yipee!");
+        result.text().then(body => {
+
+          setCookie("sessionUser", JSON.stringify({
+            email: email,
+            sessionId: body.split("\n")[1]
+          }));
+
+          setUser({
+            email: email
+          })
+
+          navigate("/search");
+        });
       }
     });
 
@@ -80,3 +94,7 @@ function LoginPage() {
 }
 
 export default LoginPage;
+
+interface Props {
+  setUser: (a: any) => void;
+}

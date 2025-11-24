@@ -61,6 +61,14 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+.nav-logged-in-text {
+  font-family: "Goudy Bookletter 1911", serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #000000;
+  margin: 0;
+}
+
 @media (max-width: 768px) {
   .nav-container {
     padding: 1rem;

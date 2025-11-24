@@ -4,8 +4,9 @@ import './SignUpPage.css';
 import { apiClient } from '../services/api';
 import validator from 'validator';
 import { StatusCodes } from 'http-status-codes';
+import { setCookie } from 'typescript-cookie';
 
-function SignUpPage() {
+function SignUpPage({setUser}: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -33,6 +34,18 @@ function SignUpPage() {
       } else {
         // Signup Successful!
         console.log("Yipee!");
+        result.text().then(body => {
+          setCookie("sessionUser", JSON.stringify({
+            email: email,
+            sessionId: body.split("\n")[1]
+          }));
+          
+          setUser({
+            email: email
+          })
+          
+          navigate("/search");
+        });
       }
     });
   };
@@ -79,3 +92,7 @@ function SignUpPage() {
 }
 
 export default SignUpPage;
+
+interface Props {
+  setUser: (a: any) => void;
+}

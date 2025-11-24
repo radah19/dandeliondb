@@ -39,9 +39,9 @@ public class SessionService {
     }
 
     public boolean sessionExists(String email, String sessionId) {
-        boolean bool = redisTemplate.hasKey(email);
+        boolean bool = redisTemplate.hasKey(email) && getSessionId(email).equals(sessionId);
 
-        if (bool && getSessionId(email).equals(sessionId)) {
+        if (bool) {
             // Reset timer on expiration time
             redisTemplate.opsForValue().set(
                     email,

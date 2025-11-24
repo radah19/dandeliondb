@@ -36,7 +36,8 @@ public class AuthController {
         boolean result = authService.addUser(json.getString("email"), json.getString("password"));
 
         if (result) {
-            return ResponseEntity.status(HttpStatus.CREATED).body("User account successfully created (CODE 201)\n");
+            String sessionId = createSession(json.getString("email"));
+            return ResponseEntity.status(HttpStatus.CREATED).body("User account successfully created (CODE 201)\n" + sessionId);
         } else {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body("Email already found in database! (CODE 417)\n");
         }
@@ -60,7 +61,8 @@ public class AuthController {
         boolean result = authService.verifyPassword(json.getString("password"), expectedUser.getPassword());
 
         if (result) {
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("User valid (CODE 202)\n");
+            String sessionId = createSession(json.getString("email"));
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("User valid (CODE 202)\n" + sessionId);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password (CODE 401)\n");
         }
@@ -104,8 +106,8 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body("Logout complete (CODE 200)\n");
     }
 
-    private void createSession(String email) {
-        sessionService.createSession(email);
+    private String createSession(String email) {
+        return sessionService.createSession(email);
     }
 
     private void deleteSession(String email) {

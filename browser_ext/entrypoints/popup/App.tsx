@@ -116,6 +116,36 @@ function App() {
 
   };
 
+  const handleSignup = (e: FormEvent) => {
+    e.preventDefault();
+    // TODO: implement auth with backend
+    console.log('Signup:', { email, password });
+
+    if (!validator.isEmail(email)) {
+      console.log("Email not provided!");
+      return;
+    }
+
+    apiClient.fetch("/signup", {
+      method: "POST",
+      body: JSON.stringify({
+          email: email,
+          password: password
+      })
+    }).then(result => {
+      console.log("Result ", result);
+
+      if(result.status != StatusCodes.CREATED) {
+        // Login Failed
+        console.log("SADNESS!!");
+      } else {
+        // Login Successful!
+        console.log("Yipee!");
+      }
+    });
+
+  };
+
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
