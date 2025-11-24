@@ -1,4 +1,4 @@
-package com.example.redis.config;
+package com.dandeliondb.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
