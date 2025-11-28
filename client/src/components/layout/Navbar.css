@@ -15,7 +15,7 @@
   background-color: #F2D863;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   position: static;
-  margin: 1.5rem 2rem 0;
+  margin: 1.5rem 2rem 1.5rem;
   z-index: 1000;
   border-radius: 16px;
   animation: fadeIn 1.2s ease-out forwards;
