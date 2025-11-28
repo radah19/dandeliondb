@@ -55,7 +55,11 @@ public class StringSimilarityUtil {
         double matchedTokens = 0;
 
         // compare with each word in the String
+        // keep minimum length of input word to 3 characters
         for (String inputWord : inputWords) {
+            if (inputWord.length() < 3) {
+                continue;
+            }
             for (String toyWord : toyWords) {
                 if (toyWord.startsWith(inputWord)) {
                     matchedTokens++;
