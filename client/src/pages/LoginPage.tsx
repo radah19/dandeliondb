@@ -9,17 +9,25 @@ import { setCookie } from 'typescript-cookie';
 function LoginPage({setUser}: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: implement login logic
-    console.log('Login:', { email, password });
-
+    setLoginError(''); // Clear any previous errors
+    
     if (!validator.isEmail(email)) {
-      console.log("Email not provided!");
+      setLoginError("Please enter a valid email address");
       return;
     }
+
+    if (!password) {
+      setLoginError("Please enter your password");
+      return;
+    }
+
+    setIsLoading(true);
 
     apiClient.fetch("/login", {
       method: "POST",
@@ -30,12 +38,11 @@ function LoginPage({setUser}: Props) {
     }).then(result => {
       if(result.status != StatusCodes.ACCEPTED) {
         // Login Failed
-        console.log("SADNESS!!");
+        setLoginError("Incorrect username or password");
+        setIsLoading(false);
       } else {
         // Login Successful!
-        console.log("Yipee!");
         result.text().then(body => {
-
           setCookie("sessionUser", JSON.stringify({
             email: email,
             sessionId: body.split("\n")[1]
@@ -43,13 +50,21 @@ function LoginPage({setUser}: Props) {
 
           setUser({
             email: email
-          })
+          });
 
-          navigate("/search");
+          setIsLoading(false);
+          navigate("/search-home");
+        }).catch(err => {
+          console.error("Error parsing response:", err);
+          setLoginError("Login failed. Please try again.");
+          setIsLoading(false);
         });
       }
+    }).catch(err => {
+      console.error("Login error:", err);
+      setLoginError("Unable to connect to server. Please try again.");
+      setIsLoading(false);
     });
-
   };
 
   return (
@@ -83,8 +98,13 @@ function LoginPage({setUser}: Props) {
                 placeholder="Enter your password"
               />
             </div>
-            <button type="submit" className="submit-button">
-              Login
+            {loginError && (
+              <div className="error-message">
+                {loginError}
+              </div>
+            )}
+            <button type="submit" className="submit-button" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>
         </div>

@@ -1,0 +1,110 @@
+.search-home-page {
+  width: 100%;
+  height: 100%;
+  background: #FAF9F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.search-home-container {
+  width: 100%;
+  max-width: 800px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.search-home-title {
+  font-family: "Goudy Bookletter 1911", serif;
+  font-size: 4rem;
+  font-weight: 400;
+  color: #000;
+  margin: 0 0 1rem 0;
+}
+
+.search-home-subtitle {
+  font-family: "Goudy Bookletter 1911", serif;
+  font-size: 1.5rem;
+  color: #666;
+  margin: 0 0 3rem 0;
+}
+
+.search-form {
+  width: 100%;
+}
+
+.search-input-wrapper {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  background-color: #F2D863;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-family: "Goudy Bookletter 1911", serif;
+  font-size: 1.125rem;
+  border: 2px solid #000;
+  border-radius: 8px;
+  background-color: #FAF9F6;
+  color: #000;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-input::placeholder {
+  color: #666;
+  opacity: 0.7;
+}
+
+.search-button {
+  padding: 0.75rem 2rem;
+  font-family: "Goudy Bookletter 1911", serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  background-color: #000;
+  color: #F2D863;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.search-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .search-home-container {
+    padding: 1rem;
+  }
+
+  .search-home-title {
+    font-size: 2.5rem;
+  }
+
+  .search-home-subtitle {
+    font-size: 1.125rem;
+  }
+
+  .search-input-wrapper {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+}

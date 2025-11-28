@@ -9,17 +9,25 @@ import { setCookie } from 'typescript-cookie';
 function SignUpPage({setUser}: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [signupError, setSignupError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: implement sign-up logic
-    console.log('Sign up:', { email, password });
-
+    setSignupError(''); // Clear any previous errors
+    
     if (!validator.isEmail(email)) {
-      console.log("Email not provided!");
+      setSignupError("Please enter a valid email address");
       return;
     }
+
+    if (!password || password.length < 6) {
+      setSignupError("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsLoading(true);
 
     apiClient.fetch("/signup", {
       method: "POST",
@@ -30,10 +38,14 @@ function SignUpPage({setUser}: Props) {
     }).then(result => {
       if(result.status != StatusCodes.CREATED) {
         // Signup Failed
-        console.log("SADNESS!!");
+        if (result.status === StatusCodes.CONFLICT) {
+          setSignupError("An account with this email already exists");
+        } else {
+          setSignupError("Sign up failed. Please try again.");
+        }
+        setIsLoading(false);
       } else {
         // Signup Successful!
-        console.log("Yipee!");
         result.text().then(body => {
           setCookie("sessionUser", JSON.stringify({
             email: email,
@@ -42,11 +54,20 @@ function SignUpPage({setUser}: Props) {
           
           setUser({
             email: email
-          })
+          });
           
-          navigate("/search");
+          setIsLoading(false);
+          navigate("/search-home");
+        }).catch(err => {
+          console.error("Error parsing response:", err);
+          setSignupError("Sign up failed. Please try again.");
+          setIsLoading(false);
         });
       }
+    }).catch(err => {
+      console.error("Signup error:", err);
+      setSignupError("Unable to connect to server. Please try again.");
+      setIsLoading(false);
     });
   };
 
@@ -81,8 +102,13 @@ function SignUpPage({setUser}: Props) {
                 placeholder="Enter your password"
               />
             </div>
-            <button type="submit" className="submit-button">
-              Sign Up
+            {signupError && (
+              <div className="error-message">
+                {signupError}
+              </div>
+            )}
+            <button type="submit" className="submit-button" disabled={isLoading}>
+              {isLoading ? 'Creating Account...' : 'Sign Up'}
             </button>
           </form>
         </div>
