@@ -58,6 +58,16 @@ function App() {
   useEffect(() => {
     // Perform Sign in if session exists
     storage.getItem<SessionUserType>('local:sessionUser').then((result) => {
+      if(import.meta.env.WXT_FRONTEND_URL == `http://127.0.0.1:5173`){
+        // Skip session verification for localhost
+        setEmail(email);
+                
+        setIsAuthenticated(true);
+        setView('home');
+        setLoginError('');
+        return;
+      }
+
       if (result && result.email && result.sessionId) {
         apiClient.fetch("/session-login", {
             method: "POST",
@@ -211,7 +221,7 @@ function App() {
         // Logout Successful!
         console.log("Yipee!");
         result.text().then(() => {
-          setIsAuthenticated(false)
+          setIsAuthenticated(false);
         });
       }
     });
