@@ -14,12 +14,12 @@ function SessionLoginPage({setUser, setVerifyingLoginSession}: SessionProps) {
         if (sessionUser != undefined) {
             const user = JSON.parse(sessionUser);
 
-            // if(import.meta.env.VITE_FRONTEND_URL == `http://127.0.0.1:5173`){
-            //     //Skip for localhost, takes too long 😔
-            //     setUser(user);
-            //     setVerifyingLoginSession(false);
-            //     return;
-            // }
+            if(import.meta.env.VITE_FRONTEND_URL == `http://127.0.0.1:5173`){
+                // Skip for localhost
+                setUser(user);
+                setVerifyingLoginSession(false);
+                return;
+            }
 
             // Otherwise fetch actual session
             apiClient.fetch("/session-login", {
@@ -50,7 +50,7 @@ function SessionLoginPage({setUser, setVerifyingLoginSession}: SessionProps) {
 
     return (
         <div>
-            <p>Signing u in!</p>
+            <p>Signing you in...</p>
         </div>
     );
 }
