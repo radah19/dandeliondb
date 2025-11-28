@@ -46,19 +46,6 @@ public class ProductRepository {
                 .collect(Collectors.toList());
     }
 
-//    public List<Product> getProductsByName(String name) {
-//        Key key = Key.builder()
-//                .partitionValue(name)
-//                .build();
-//
-//        QueryConditional queryConditional = QueryConditional.keyEqualTo(key);
-//
-//        return productTable.query(queryConditional)
-//                .items()
-//                .stream()
-//                .collect(Collectors.toList());
-//    }
-
     public Product getProductByNameAndBrand(String name, String brand) {
         Product product = new Product();
         product.setName(name);
@@ -66,7 +53,14 @@ public class ProductRepository {
         return productTable.getItem(product);
     }
 
-    // batch all products in a single request
+    private List<Product> getAllProducts() {
+        return productTable.scan()
+                .items()
+                .stream()
+                .collect(Collectors.toList());
+    }
+
+    // batch all requested products in a single request, used for search history
     public List<Product> batchGetProducts(List<Product> productKeys) {
         if (productKeys == null || productKeys.isEmpty()) {
             return List.of();
@@ -86,13 +80,6 @@ public class ProductRepository {
         BatchGetResultPageIterable batchResults = enhancedClient.batchGetItem(batchRequest);
 
         return batchResults.resultsForTable(productTable).stream()
-                .collect(Collectors.toList());
-    }
-
-    private List<Product> getAllProducts() {
-        return productTable.scan()
-                .items()
-                .stream()
                 .collect(Collectors.toList());
     }
 }

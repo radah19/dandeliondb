@@ -20,16 +20,6 @@ public class ProductController {
         this.productRepository = productRepository;
     }
 
-    @GetMapping(value="/product/{name}/{brand}")
-    public Product getProductByNameAndBrand(@PathVariable String name, @PathVariable String brand) {
-        try {
-            return productRepository.getProductByNameAndBrand(name, brand);
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            return null;
-        }
-    }
-
     @GetMapping("/product/{name}")
     public ResponseEntity<List<Product>> getProductByName(@PathVariable String name) {
         try {
@@ -61,4 +51,15 @@ public class ProductController {
             System.out.println(ex.getMessage());
         }
     }
+
+    @GetMapping(value="/product/{name}/{brand}")
+    public Product getProductByNameAndBrand(@PathVariable String name, @PathVariable String brand) {
+        try {
+            return productRepository.getProductByNameAndBrand(name, brand);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return null;
+        }
+    }
+
 }
