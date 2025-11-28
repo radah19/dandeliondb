@@ -26,7 +26,7 @@ function SearchHomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [recentSearches, setRecentSearches] = useState<Product[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const RESULTS_PER_PAGE = 6;
   const CAROUSEL_ITEMS_PER_PAGE = 3;
