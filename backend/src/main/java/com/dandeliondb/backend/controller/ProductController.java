@@ -36,6 +36,7 @@ public class ProductController {
                     .body(products);
 
         } catch (Exception ex) {
+            System.out.println(ex.getMessage());
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ArrayList<>());

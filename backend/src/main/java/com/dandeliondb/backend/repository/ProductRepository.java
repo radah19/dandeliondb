@@ -1,18 +1,17 @@
 package com.dandeliondb.backend.repository;
 
-import com.dandeliondb.backend.config.StringSimilarityUtil;
+import com.dandeliondb.backend.utils.StringSimilarityUtil;
 import com.dandeliondb.backend.model.Product;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetResultPageIterable;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.ReadBatch;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
@@ -41,8 +40,11 @@ public class ProductRepository {
 
         List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 5, 0.90);
 
-        return all.stream()
-                .filter(p -> topNames.contains(p.getName()))
+        Map<String, List<Product>> productsByName = all.stream()
+                .collect(Collectors.groupingBy(Product::getName));
+        
+        return topNames.stream()
+                .flatMap(name -> productsByName.getOrDefault(name, List.of()).stream())
                 .collect(Collectors.toList());
     }
 
