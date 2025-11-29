@@ -280,6 +280,17 @@ export default defineContentScript({
           fillField(fields.brand, productData.brand, 'brand');
           // Trigger keydown to show dropdown suggestions
           fields.brand.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowDown' }));
+        } else if (isBigCommerce) {
+          fillField(fields.brand, productData.brand, 'brand');
+          
+          setTimeout(() => {
+            // Always click first option (item-0)
+            const firstOption = document.querySelector('li[role="option"]');
+            if (firstOption instanceof HTMLElement) {
+              console.log('[DandelionDB] Clicking first brand option');
+              firstOption.click();
+            }
+          }, 300);
         } else {
           fillField(fields.brand, productData.brand, 'brand');
         }
