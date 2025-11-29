@@ -22,6 +22,7 @@ export default defineContentScript({
         description: null as HTMLTextAreaElement | HTMLInputElement | null,
         brand: null as HTMLInputElement | null,
         price: null as HTMLInputElement | null,
+        images: null as HTMLButtonElement | null,
       };
 
       // Try Lightspeed-specific IDs first
@@ -45,6 +46,12 @@ export default defineContentScript({
           console.log('[DandelionDB] UPC field element:', fields.upc);
           return fields;
         }
+      }
+
+      // BigCommerce-specific detection
+      if (isBigCommerce) {
+        // Detect image upload button for BigCommerce
+        fields.images = document.querySelector<HTMLButtonElement>('button[ng-click="$ctrl.addFromUrl()"]');
       }
 
       // Generic field detection fallback

@@ -90,29 +90,47 @@ function App() {
       });
     }
     });
+  }, []);
 
-    if (typeof browser !== 'undefined') {
+  useEffect(() => {
+    const checkCurrentTab = () => {
+      if (typeof browser === 'undefined') return;
+
       browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
         if (tabs[0]?.url) {
           const url = tabs[0].url.toLowerCase();
           setCurrentUrl(tabs[0].url);
-          // check if on lightspeed or bigcommerce. first one may not be needed
+          
           const isSupported = url.includes('lightspeed') || url.includes('bigcommerce') || url.includes('merchantos');
           setIsSupportedPlatform(isSupported);
           
-          // Detect fields on the page by sending message to background
           if (isSupported) {
             browser.runtime.sendMessage({ type: 'DETECT_FIELDS' })
               .then((response: any) => {
                 if (response?.success) {
                   setDetectedFields(response.fields);
+                } else {
+                  setDetectedFields([]);
                 }
               })
-              .catch(err => console.error('Error detecting fields:', err));
+              .catch(err => {
+                console.error('Error detecting fields:', err);
+                setDetectedFields([]);
+              });
+          } else {
+            setDetectedFields([]);
           }
         }
       });
-    }
+    };
+
+    checkCurrentTab();
+    
+    window.addEventListener('focus', checkCurrentTab);
+    
+    return () => {
+      window.removeEventListener('focus', checkCurrentTab);
+    };
   }, []);
 
   const handleLogin = (e: FormEvent) => {
