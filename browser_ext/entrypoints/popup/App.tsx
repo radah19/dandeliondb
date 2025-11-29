@@ -44,7 +44,6 @@ function App() {
     sku: true,
     brand: true,
     price: true,
-    quantity: true,
     description: true,
     images: true
   });
@@ -404,7 +403,7 @@ function App() {
                     id="search"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Enter product name, UPC, or SKU..."
+                    placeholder="Enter product name..."
                     disabled={isSearching}
                   />
                 </div>
@@ -417,7 +416,7 @@ function App() {
               {hasSearched && searchResults.length === 0 && !selectedProduct && !isSearching && (
                 <div className="no-results">
                   <p>No products found for "{lastSearchQuery}"</p>
-                  <p className="no-results-hint">Try searching with a different name, UPC, or SKU</p>
+                  <p className="no-results-hint">Try searching with a different product name</p>
                 </div>
               )}
 
@@ -576,14 +575,6 @@ function App() {
                                   onChange={(e) => setAutofillFields({...autofillFields, price: e.target.checked})}
                                 />
                                 <span>Price</span>
-                              </label>
-                              <label className="checkbox-label">
-                                <input
-                                  type="checkbox"
-                                  checked={autofillFields.quantity}
-                                  onChange={(e) => setAutofillFields({...autofillFields, quantity: e.target.checked})}
-                                />
-                                <span>Quantity</span>
                               </label>
                               <label className="checkbox-label">
                                 <input

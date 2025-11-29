@@ -49,7 +49,7 @@ body {
 
 .container {
   width: 400px;
-  min-height: 500px;
+  height: 550px;
   background-color: #FAF9F6;
   display: flex;
   flex-direction: column;
