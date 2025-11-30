@@ -8,6 +8,9 @@ export default defineContentScript({
     const isLightspeed = currentUrl.includes('lightspeed');
     const isBigCommerce = currentUrl.includes('bigcommerce');
     
+    // Track if this is the first autofill after page load
+    let isFirstAutofill = true;
+    
     // only log on supported platforms
     if (isLightspeed || isBigCommerce) {
       console.log(`[DandelionDB] Active on ${isLightspeed ? 'Lightspeed' : 'BigCommerce'}`);
@@ -272,7 +275,16 @@ export default defineContentScript({
 
       if (autofillSettings.name) fillField(fields.productName, productData.name, 'productName');
       if (autofillSettings.upc) fillField(fields.upc, productData.upc, 'upc');
-      if (autofillSettings.sku) fillField(fields.sku, productData.sku, 'sku');
+      
+      // SKU field on BigCommerce needs delay on first autofill
+      if (autofillSettings.sku) {
+        if (isBigCommerce && isFirstAutofill) {
+          setTimeout(() => fillField(fields.sku, productData.sku, 'sku'), 500);
+        } else {
+          fillField(fields.sku, productData.sku, 'sku');
+        }
+      }
+      
       if (autofillSettings.description) fillField(fields.description, productData.descriptions?.[0], 'description');
       if (autofillSettings.brand && fields.brand) {
         // Special handling for Lightspeed brand autocomplete
@@ -280,17 +292,46 @@ export default defineContentScript({
           fillField(fields.brand, productData.brand, 'brand');
           // Trigger keydown to show dropdown suggestions
           fields.brand.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowDown' }));
-        } else if (isBigCommerce) {
-          fillField(fields.brand, productData.brand, 'brand');
-          
-          setTimeout(() => {
-            // Always click first option (item-0)
-            const firstOption = document.querySelector('li[role="option"]');
-            if (firstOption instanceof HTMLElement) {
-              console.log('[DandelionDB] Clicking first brand option');
-              firstOption.click();
-            }
-          }, 300);
+        } else if (isBigCommerce && fields.brand) {
+          if (isFirstAutofill) {
+            // First autofill after page load - use delay to let dropdown initialize
+            // Focus and click to open dropdown and start loading brands
+            fields.brand.focus();
+            fields.brand.click();
+            
+            // Wait for dropdown to load all brands
+            setTimeout(() => {
+              if (!fields.brand) return;
+              
+              console.log('[DandelionDB] Filling brand field after dropdown initialized');
+              fillField(fields.brand, productData.brand, 'brand');
+              
+              // Wait for filtering, then click first option
+              setTimeout(() => {
+                const firstOption = document.querySelector('li[role="option"]:not([aria-disabled="true"])');
+                if (firstOption instanceof HTMLElement) {
+                  console.log('[DandelionDB] Clicking first brand option:', firstOption.textContent?.trim());
+                  firstOption.click();
+                } else {
+                  console.warn('[DandelionDB] No dropdown option found');
+                }
+              }, 500);
+            }, 1500);
+            
+            isFirstAutofill = false;
+          } else {
+            // Subsequent autofills - dropdown already initialized, use simple approach
+            console.log('[DandelionDB] Subsequent autofill - using fast approach');
+            fillField(fields.brand, productData.brand, 'brand');
+            
+            setTimeout(() => {
+              const firstOption = document.querySelector('li[role="option"]:not([aria-disabled="true"])');
+              if (firstOption instanceof HTMLElement) {
+                console.log('[DandelionDB] Clicking first brand option:', firstOption.textContent?.trim());
+                firstOption.click();
+              }
+            }, 300);
+          }
         } else {
           fillField(fields.brand, productData.brand, 'brand');
         }
