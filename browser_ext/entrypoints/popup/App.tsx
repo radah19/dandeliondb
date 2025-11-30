@@ -312,6 +312,26 @@ function App() {
     }
   };
 
+  const handleGenerateDescription = async () => {
+    const response = await apiClient.fetch('/description', {
+      method: 'POST',
+      body: JSON.stringify(selectedProduct)
+    });
+
+    if (!response.ok) {
+      console.error('[DandelionDB] Failed to generate description:', response.status);
+      return;
+    }
+
+    const generatedDescription = await response.text();
+    
+    // Update the selected product with the new description
+    setSelectedProduct({
+      ...selectedProduct!,
+      descriptions: [generatedDescription]
+    } as Product);
+  };
+
   const handleAutofill = async () => {
     if (!selectedProduct) return;
 
