@@ -13,8 +13,23 @@ public class AIService {
     }
 
     public String generateDesc(Product product) {
-        String prompt = "Generate a description based on this toy";
-        return chatClient.prompt(prompt).call().content();
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("Generate an engaging product description that is around 100-150 words for the following toy:\n");
+        
+        promptBuilder.append("Product: ").append(product.getName()).append("\n");
+        promptBuilder.append("Brand: ").append(product.getBrand()).append("\n");
+        promptBuilder.append("Price: $").append(product.getPrice()).append("\n");
+        
+        if (product.getTags() != null && !product.getTags().isEmpty()) {
+            promptBuilder.append("Tags: ").append(String.join(", ", product.getTags())).append("\n");
+        }
+        
+        if (product.getDescriptions() != null && !product.getDescriptions().isEmpty()) {
+            promptBuilder.append("\nTake inspiration from this existing description:\n");
+            promptBuilder.append(product.getDescriptions().get(0)).append("\n");
+        }
+              
+        return chatClient.prompt(promptBuilder.toString()).call().content();
     }
 
 }
