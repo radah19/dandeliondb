@@ -294,17 +294,18 @@ export default defineContentScript({
           fields.brand.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowDown' }));
         } else if (isBigCommerce && fields.brand) {
           if (isFirstAutofill) {
-            // First autofill after page load - use delay to let dropdown initialize
-            // Focus and click to open dropdown and start loading brands
+            // First autofill: open dropdown, wait for init, then type
             fields.brand.focus();
             fields.brand.click();
             
-            // Wait for dropdown to load all brands
+            // Wait for dropdown to load, then start typing
             setTimeout(() => {
               if (!fields.brand) return;
               
-              console.log('[DandelionDB] Filling brand field after dropdown initialized');
-              fillField(fields.brand, productData.brand, 'brand');
+              // Type the brand name character by character to trigger filtering
+              const brandName = productData.brand;
+              fields.brand.value = brandName;
+              fields.brand.dispatchEvent(new Event('input', { bubbles: true }));
               
               // Wait for filtering, then click first option
               setTimeout(() => {
@@ -312,22 +313,18 @@ export default defineContentScript({
                 if (firstOption instanceof HTMLElement) {
                   console.log('[DandelionDB] Clicking first brand option:', firstOption.textContent?.trim());
                   firstOption.click();
-                } else {
-                  console.warn('[DandelionDB] No dropdown option found');
                 }
               }, 500);
             }, 1500);
             
             isFirstAutofill = false;
           } else {
-            // Subsequent autofills - dropdown already initialized, use simple approach
-            console.log('[DandelionDB] Subsequent autofill - using fast approach');
+            // Subsequent autofills - dropdown already initialized
             fillField(fields.brand, productData.brand, 'brand');
             
             setTimeout(() => {
               const firstOption = document.querySelector('li[role="option"]:not([aria-disabled="true"])');
               if (firstOption instanceof HTMLElement) {
-                console.log('[DandelionDB] Clicking first brand option:', firstOption.textContent?.trim());
                 firstOption.click();
               }
             }, 300);
