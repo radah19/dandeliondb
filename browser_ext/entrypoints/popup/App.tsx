@@ -7,6 +7,7 @@ import prevIcon from '../../assets/prev-image.svg';
 import nextIcon from '../../assets/next-image.svg';
 import downloadIcon from '../../assets/download-image.svg';
 import settingsIcon from '../../assets/autofill-settings.svg';
+import dandelionLogo from '../../assets/dandeliondb.svg';
 
 type View = 'welcome' | 'login' | 'signup' | 'home';
 
@@ -398,15 +399,21 @@ function App() {
           <h1>DandelionDB</h1>
         </div>
         <div className="content">
-          <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666' }}>
-            Simplify your toy store's workflow
-          </p>
-          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('login'); }} className="btn btn-primary" style={{ marginBottom: '10px' }}>
-            Login
-          </button>
-          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('signup'); }} className="btn btn-primary">
-            Sign Up
-          </button>
+          <div className="welcome-page-content">
+            <div className="welcome-content">
+              <img src={dandelionLogo} alt="DandelionDB" className="welcome-logo" />
+              <h2 className="welcome-title">DandelionDB</h2>
+              <p className="welcome-tagline">Simplify your toy store's workflow</p>
+            </div>
+            <div className="welcome-buttons">
+              <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('login'); }} className="btn btn-primary">
+                Login
+              </button>
+              <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('signup'); }} className="btn btn-primary">
+                Sign Up
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -452,7 +459,7 @@ function App() {
               </div>
             )}
           </form>
-          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('welcome'); }} className="btn" style={{ marginTop: '10px', background: 'transparent', color: '#007bff' }}>
+          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('welcome'); }} className="auth-back-btn">
             ← Back
           </button>
         </div>
@@ -500,7 +507,7 @@ function App() {
               </div>
             )}
           </form>
-          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('welcome'); }} className="btn" style={{ marginTop: '10px', background: 'transparent', color: '#007bff' }}>
+          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('welcome'); }} className="auth-back-btn">
             ← Back
           </button>
         </div>

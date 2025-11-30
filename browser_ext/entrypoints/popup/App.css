@@ -135,6 +135,60 @@ body {
   max-width: 100%;
 }
 
+/* Welcome Page */
+.welcome-content {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.welcome-page-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.welcome-logo {
+  width: auto;
+  height: 120px;
+  margin: 0 auto 1rem auto;
+  object-fit: contain;
+}
+
+.welcome-title {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #000;
+}
+
+.welcome-tagline {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+
+.welcome-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.auth-back-btn {
+  margin-top: 1rem;
+  background: transparent;
+  color: #007bff;
+  padding: 0.5rem;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  font-family: "Goudy Bookletter 1911", serif;
+  font-size: 0.875rem;
+}
+
+.auth-back-btn:hover {
+  color: #0056b3;
+}
+
 .error-message {
   background-color: #fee;
   color: #c33;
