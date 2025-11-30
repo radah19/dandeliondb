@@ -8,7 +8,7 @@ import nextIcon from '../../assets/next-image.svg';
 import downloadIcon from '../../assets/download-image.svg';
 import settingsIcon from '../../assets/autofill-settings.svg';
 
-type View = 'login' | 'home';
+type View = 'welcome' | 'login' | 'signup' | 'home';
 
 interface Product {
   id?: number;
@@ -25,7 +25,7 @@ interface Product {
 }
 
 function App() {
-  const [view, setView] = useState<View>('login');
+  const [view, setView] = useState<View>('welcome');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
   const [isSupportedPlatform, setIsSupportedPlatform] = useState(false);
@@ -57,38 +57,38 @@ function App() {
   useEffect(() => {
     // Perform Sign in if session exists
     storage.getItem<SessionUserType>('local:sessionUser').then((result) => {
-      if(import.meta.env.WXT_FRONTEND_URL == `http://127.0.0.1:5173`){
-        // Skip session verification for localhost
-        setEmail(email);
-                
-        setIsAuthenticated(true);
-        setView('home');
-        setLoginError('');
-        return;
-      }
-
       if (result && result.email && result.sessionId) {
+        if(import.meta.env.WXT_FRONTEND_URL == `http://127.0.0.1:5173`){
+          // Skip session verification for localhost
+          setEmail(result.email);
+                  
+          setIsAuthenticated(true);
+          setView('home');
+          setLoginError('');
+          return;
+        }
+
         apiClient.fetch("/session-login", {
             method: "POST",
             body: JSON.stringify({
                 email: result.email,
                 sessionId: result.sessionId
             })
-        }).then(result => {
-            if(result.status != StatusCodes.OK) {
+        }).then(sessionResult => {
+            if(sessionResult.status != StatusCodes.OK) {
                 // Login Failed
                 console.log("SADNESS!!");
             } else {
                 // Login Successful!
                 console.log("Yipee!");
-                setEmail(email);
+                setEmail(result.email);
                         
                 setIsAuthenticated(true);
                 setView('home');
                 setLoginError('');
             }
-      });
-    }
+        });
+      }
     });
   }, []);
 
@@ -181,11 +181,15 @@ function App() {
 
   const handleSignup = (e: FormEvent) => {
     e.preventDefault();
-    // TODO: implement auth with backend
-    console.log('Signup:', { email, password });
-
+    setLoginError('');
+    
     if (!validator.isEmail(email)) {
-      console.log("Email not provided!");
+      setLoginError("Please enter a valid email address");
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      setLoginError("Password must be at least 6 characters");
       return;
     }
 
@@ -196,15 +200,15 @@ function App() {
           password: password
       })
     }).then(result => {
-      console.log("Result ", result);
-
       if(result.status != StatusCodes.CREATED) {
-        // Login Failed
-        console.log("SADNESS!!");
+        // Signup Failed
+        if (result.status === StatusCodes.CONFLICT) {
+          setLoginError("An account with this email already exists");
+        } else {
+          setLoginError("Sign up failed. Please try again.");
+        }
       } else {
-        // Login Successful!
-        console.log("Yipee!");
-
+        // Signup Successful!
         result.text().then(async (body) => {
           await storage.setItem('local:sessionUser', {
             email: email,
@@ -213,35 +217,46 @@ function App() {
 
           setEmail(email);
           setPassword("");
+          setIsAuthenticated(true);
+          setView('home');
+          setLoginError('');
+        }).catch(err => {
+          console.error("Error parsing response:", err);
+          setLoginError("Sign up failed. Please try again.");
         });
-
-        setIsAuthenticated(true);
-        setView('home');
       }
+    }).catch(err => {
+      console.error("Signup error:", err);
+      setLoginError("Unable to connect to server. Please try again.");
     });
-
   };
 
-  const handleLogout = (e: FormEvent) => {
+  const handleLogout = async (e: FormEvent) => {
     e.preventDefault();
 
-    apiClient.fetch("/logout", {
-      method: "POST",
-      body: JSON.stringify({
-          email: email,
-      })
-    }).then(result => {
+    try {
+      const result = await apiClient.fetch("/logout", {
+        method: "POST",
+        body: JSON.stringify({
+            email: email,
+        })
+      });
+      
       if(result.status != StatusCodes.OK) {
         // Logout Failed
         console.log("SADNESS!!");
       } else {
         // Logout Successful!
         console.log("Yipee!");
-        result.text().then(() => {
-          setIsAuthenticated(false);
-        });
+        await storage.removeItem('local:sessionUser');
+        setIsAuthenticated(false);
+        setView('welcome');
+        setEmail('');
+        setPassword('');
       }
-    });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   }
 
   const handleGoToHome = () => {
@@ -352,14 +367,15 @@ function App() {
         type: 'FILL_FORM',
         product: filteredProduct,
         autofillSettings: autofillFields
-      });
-      
+      });      
       if (response?.success && response.fieldsFilled > 0) {
+              console.log('[DandelionDB] Attempting to track search history for:', selectedProduct.name);
         try {
-          await apiClient.fetch(
+          const searchResponse = await apiClient.fetch(
             `/search/${encodeURIComponent(email)}/${encodeURIComponent(selectedProduct.name)}/${encodeURIComponent(selectedProduct.brand)}`,
             { method: 'POST' }
           );
+          console.log('[DandelionDB] Search history response:', searchResponse.status);
         } catch (err) {
           console.warn('[DandelionDB] Failed to track search history:', err);
           // Don't fail the autofill if tracking fails
@@ -374,8 +390,30 @@ function App() {
     }
   };
 
-  // login View
-  if (!isAuthenticated) {
+  // Welcome View
+  if (view === 'welcome' && !isAuthenticated) {
+    return (
+      <div className="container">
+        <div className="header">
+          <h1>DandelionDB</h1>
+        </div>
+        <div className="content">
+          <p style={{ textAlign: 'center', marginBottom: '20px', color: '#666' }}>
+            Simplify your toy store's workflow
+          </p>
+          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('login'); }} className="btn btn-primary" style={{ marginBottom: '10px' }}>
+            Login
+          </button>
+          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('signup'); }} className="btn btn-primary">
+            Sign Up
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Login View
+  if (view === 'login' && !isAuthenticated) {
     return (
       <div className="container">
         <div className="header">
@@ -414,6 +452,57 @@ function App() {
               </div>
             )}
           </form>
+          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('welcome'); }} className="btn" style={{ marginTop: '10px', background: 'transparent', color: '#007bff' }}>
+            ← Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Signup View
+  if (view === 'signup' && !isAuthenticated) {
+    return (
+      <div className="container">
+        <div className="header">
+          <h1>DandelionDB</h1>
+        </div>
+        <div className="content">
+          <form onSubmit={handleSignup} className="login-form">
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                type="text"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Sign Up
+            </button>
+            {loginError && (
+              <div className="error-message">
+                {loginError}
+              </div>
+            )}
+          </form>
+          <button onClick={() => { setEmail(''); setPassword(''); setLoginError(''); setView('welcome'); }} className="btn" style={{ marginTop: '10px', background: 'transparent', color: '#007bff' }}>
+            ← Back
+          </button>
         </div>
       </div>
     );
