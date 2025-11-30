@@ -32,7 +32,6 @@ public class StringSimilarityUtil {
                 double jwScore = jw.apply(inputLower, candidateLower);
                 double hybridScore = prefixScore + jwScore;
                 candidatesWithScores.add(Map.entry(candidate, hybridScore));
-                // System.out.println("Prefix match " + candidate + " - " + hybridScore);
             } else {
                 // If no prefix match, use JW score only
                 double jwScore = jw.apply(inputLower, candidateLower);
