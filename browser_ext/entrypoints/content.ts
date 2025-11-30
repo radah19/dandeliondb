@@ -279,7 +279,7 @@ export default defineContentScript({
       // SKU field on BigCommerce needs delay on first autofill
       if (autofillSettings.sku) {
         if (isBigCommerce && isFirstAutofill) {
-          setTimeout(() => fillField(fields.sku, productData.sku, 'sku'), 500);
+          setTimeout(() => fillField(fields.sku, productData.sku, 'sku'), 400);
         } else {
           fillField(fields.sku, productData.sku, 'sku');
         }
