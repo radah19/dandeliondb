@@ -244,6 +244,16 @@ function App() {
     });
   }
 
+  const handleGoToHome = () => {
+    const frontendUrl = import.meta.env.WXT_FRONTEND_URL || 'https://dandeliondb.up.railway.app';
+    browser.tabs.create({ url: frontendUrl });
+  };
+
+  const handleGoToDatabase = () => {
+    const frontendUrl = import.meta.env.WXT_FRONTEND_URL || 'https://dandeliondb.up.railway.app';
+    browser.tabs.create({ url: `${frontendUrl}/search-home` });
+  };
+
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
@@ -394,10 +404,15 @@ function App() {
     return (
       <div className="container">
         <div className="header">
-          <h1>DandelionDB</h1>
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
+          <h1 className="clickable-title" onClick={handleGoToHome}>DandelionDB</h1>
+          <div className="header-buttons">
+            <button className="database-btn" onClick={handleGoToDatabase}>
+              Database
+            </button>
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
         </div>
         <div className="content">
           {isSupportedPlatform ? (

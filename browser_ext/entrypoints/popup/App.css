@@ -59,7 +59,7 @@ body {
   background-color: #F2D863;
   padding: 1rem;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
@@ -68,6 +68,20 @@ body {
   font-size: 1.5rem;
   color: #000;
   font-weight: 600;
+}
+
+.clickable-title {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.clickable-title:hover {
+  opacity: 0.8;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .tagline {
@@ -89,6 +103,22 @@ body {
 
 .logout-btn:hover, .back-btn:hover {
   background-color: rgba(0, 0, 0, 0.1);
+}
+
+.database-btn {
+  background: #000;
+  border: none;
+  color: #F2D863;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-family: "Goudy Bookletter 1911", serif;
+}
+
+.database-btn:hover {
+  background-color: #333;
 }
 
 .content {

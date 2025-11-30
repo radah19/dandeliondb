@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getCookie } from 'typescript-cookie';
 import './SearchHomePage.css';
 import { apiClient } from '../services/api';
@@ -18,7 +18,18 @@ interface Product {
   weights?: any;
 }
 
+interface LocationState {
+  restoreSearch?: boolean;
+  searchQuery?: string;
+  searchResults?: Product[];
+  currentPage?: number;
+}
+
 function SearchHomePage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as LocationState;
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -26,7 +37,6 @@ function SearchHomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [recentSearches, setRecentSearches] = useState<Product[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
-  // const navigate = useNavigate();  
 
   const RESULTS_PER_PAGE = 6;
   const CAROUSEL_ITEMS_PER_PAGE = 3;
@@ -43,6 +53,19 @@ function SearchHomePage() {
   useEffect(() => {
     fetchSearchHistory();
   }, []);
+
+  // Restore search state when coming back from product detail page
+  useEffect(() => {
+    if (state?.restoreSearch && state.searchQuery && state.searchResults) {
+      setSearchQuery(state.searchQuery);
+      setSearchResults(state.searchResults);
+      setHasSearched(true);
+      setCurrentPage(state.currentPage || 1);
+      
+      // Clear the state so refresh doesn't restore again
+      window.history.replaceState({}, document.title);
+    }
+  }, [state]);
 
   const fetchSearchHistory = async () => {
     try {
@@ -113,8 +136,19 @@ function SearchHomePage() {
   };
 
   const handleProductClick = (product: Product) => {
-    // TODO: Navigate to product detail page or open modal
-    console.log('Selected product:', product);
+    // Navigate to product detail page using name and brand, pass search state
+    if (product.name && product.brand) {
+      navigate(`/product/${encodeURIComponent(product.name)}/${encodeURIComponent(product.brand)}`, {
+        state: {
+          fromSearch: true,
+          searchQuery: searchQuery,
+          searchResults: searchResults,
+          currentPage: currentPage
+        }
+      });
+    } else {
+      console.warn('Product is missing name or brand, cannot navigate to detail page');
+    }
   };
 
   const handleBackToSearch = () => {

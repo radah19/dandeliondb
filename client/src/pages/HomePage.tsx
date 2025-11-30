@@ -5,12 +5,20 @@ import dandelionGif1 from '../assets/dandeliongif1.gif';
 import dandelionGif2 from '../assets/dandeliongif2.gif';
 import dandelionGif3 from '../assets/dandeliongif3.gif';
 
-function HomePage() {
+interface HomePageProps {
+  user: {
+    email: string;
+  };
+}
+
+function HomePage({ user }: HomePageProps) {
   const featuresRef = useRef<HTMLDivElement>(null);
   const [activeTile, setActiveTile] = useState<number>(1);
   const [shouldAnimate, setShouldAnimate] = useState<boolean>(true);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isLoggedIn = user.email !== '';
 
   useEffect(() => {
     // check if user is navigating from signup/login page
@@ -31,6 +39,10 @@ function HomePage() {
     navigate('/beta-signup');
   };
 
+  const handleDatabaseClick = () => {
+    navigate('/search-home');
+  };
+
   return (
     <div className={`home-page ${shouldAnimate ? '' : 'no-animate'}`}> 
       <div className="hero-container">
@@ -47,8 +59,11 @@ function HomePage() {
           <button className="explore-button" onClick={scrollToFeatures}>
             Explore
           </button>
-          <button className="signup-cta-button" onClick={handleSignUp}>
-            Sign up for beta
+          <button 
+            className="signup-cta-button" 
+            onClick={isLoggedIn ? handleDatabaseClick : handleSignUp}
+          >
+            {isLoggedIn ? 'Database' : 'Sign up for beta'}
           </button>
         </div>
       </div>
