@@ -111,8 +111,7 @@ public class AuthController {
         if (json == null) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("Bad JSON Provided! (CODE 406)\n");
         }
-
-        deleteSession(json.getString("email"));
+        
         return ResponseEntity.status(HttpStatus.OK).body("Logout complete (CODE 200)\n");
     }
 

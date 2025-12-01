@@ -3,6 +3,7 @@ import './Navbar.css';
 import { useEffect } from 'react';
 import { apiClient } from '../../services/api';
 import { StatusCodes } from 'http-status-codes';
+import { removeCookie } from 'typescript-cookie';
 
 function Navbar({user, setUser}: Props) {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ function Navbar({user, setUser}: Props) {
       } else {
         // Logout Successful!
         console.log("Yipee!");
+        removeCookie("sessionUser");
         result.text().then(() => {
           setUser({
             email: ""
