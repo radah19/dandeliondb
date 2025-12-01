@@ -61,7 +61,17 @@ public class AuthController {
         boolean result = authService.verifyPassword(json.getString("password"), expectedUser.getPassword());
 
         if (result) {
-            String sessionId = createSession(json.getString("email"));
+            String sessionId;
+            String email = json.getString("email");
+            String existingSessionId = sessionService.getSessionId(email);
+            if (existingSessionId != null) {
+                // Grab existing session id and return it
+                sessionId = existingSessionId;
+            } else {
+                // Create new session id
+                sessionId = createSession(email);
+            }
+
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("User valid (CODE 202)\n" + sessionId);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password (CODE 401)\n");
