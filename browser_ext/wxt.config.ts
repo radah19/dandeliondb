@@ -5,7 +5,14 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
     permissions: ['tabs', 'activeTab', 'webNavigation', 'storage', 'identity', 'identity.email'],
-    host_permissions: ['*://*/*']
+    host_permissions: ['*://*/*'],
+    icons: {
+      16: '/icon/dandeliondb_flower.png',
+      32: '/icon/dandeliondb_flower.png',
+      48: '/icon/dandeliondb_flower.png',
+      96: '/icon/dandeliondb_flower.png',
+      128: '/icon/dandeliondb_flower.png'
+    }
   },
   runner: {
     disabled: true  // Disable auto-opening browser
