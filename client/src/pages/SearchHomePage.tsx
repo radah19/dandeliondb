@@ -51,7 +51,7 @@ function SearchHomePage() {
   });
   // const navigate = useNavigate();  
 
-  const RESULTS_PER_PAGE = 6;
+  const RESULTS_PER_PAGE = 12;
   const CAROUSEL_ITEMS_PER_PAGE = 3;
   const totalPages = Math.ceil(searchResults.length / RESULTS_PER_PAGE);
   const startIndex = (currentPage - 1) * RESULTS_PER_PAGE;
@@ -390,7 +390,7 @@ function SearchHomePage() {
         {/* recent searches */}
         {!hasSearched && recentSearches.length > 0 && (
           <div className="recent-searches-section">
-            <h3 className="recent-searches-header">Recent Searches</h3>
+            <h3 className="recent-searches-header">Recent Autofills</h3>
             <div className="carousel-container">
               <button 
                 className="carousel-btn carousel-btn-prev"

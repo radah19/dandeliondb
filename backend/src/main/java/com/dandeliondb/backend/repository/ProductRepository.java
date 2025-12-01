@@ -37,7 +37,7 @@ public class ProductRepository {
                 .map(Product::getName)
                 .toList();
 
-        List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 5, 0.90);
+        List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 20, 0.90);
 
         Map<String, List<Product>> productsByName = all.stream()
                 .collect(Collectors.groupingBy(Product::getName));
@@ -140,7 +140,7 @@ public class ProductRepository {
                     .map(Product::getName)
                     .toList();
 
-            List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 5, 0.90);
+            List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 20, 0.90);
 
             Map<String, List<Product>> productsByName = result_ls.stream()
                     .collect(Collectors.groupingBy(Product::getName));
@@ -172,7 +172,7 @@ public class ProductRepository {
                     new_ls.add(p);
                 }
 
-                if (new_ls.size() >= 5) {
+                if (new_ls.size() >= 20) {
                     break;
                 }
             }
@@ -180,7 +180,7 @@ public class ProductRepository {
             result_ls = new_ls;
         }
 
-        return result_ls.stream().limit(5).toList();
+        return result_ls.stream().limit(20).toList();
     }
 
     private boolean intersectionExists(List<String> ls1, List<String> ls2) {
