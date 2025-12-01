@@ -39,6 +39,7 @@ function App() {
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchQuery, setLastSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [autofillFields, setAutofillFields] = useState({
     name: true,
     upc: true,
@@ -329,23 +330,34 @@ function App() {
   };
 
   const handleGenerateDescription = async () => {
-    const response = await apiClient.fetch('/description', {
-      method: 'POST',
-      body: JSON.stringify(selectedProduct)
-    });
-
-    if (!response.ok) {
-      console.error('[DandelionDB] Failed to generate description:', response.status);
-      return;
-    }
-
-    const generatedDescription = await response.text();
+    if (!selectedProduct) return;
     
-    // Update the selected product with the new description
-    setSelectedProduct({
-      ...selectedProduct!,
-      descriptions: [generatedDescription]
-    } as Product);
+    setIsGeneratingDescription(true);
+    try {
+      const response = await apiClient.fetch('/description', {
+        method: 'POST',
+        body: JSON.stringify(selectedProduct)
+      });
+
+      if (!response.ok) {
+        console.error('[DandelionDB] Failed to generate description:', response.status);
+        alert('Failed to generate description. Please try again.');
+        return;
+      }
+
+      const generatedDescription = await response.text();
+      
+      // Update the selected product with the new description
+      setSelectedProduct({
+        ...selectedProduct,
+        descriptions: [generatedDescription]
+      } as Product);
+    } catch (error) {
+      console.error('[DandelionDB] Error generating description:', error);
+      alert('Error generating description. Please try again.');
+    } finally {
+      setIsGeneratingDescription(false);
+    }
   };
 
   const handleAutofill = async () => {
@@ -663,7 +675,17 @@ function App() {
                         <span className="value">${selectedProduct.price}</span>
                       </div>
                       <div className="description">
-                        <span className="label">Description:</span>
+                        <div className="description-header">
+                          <span className="label">Description:</span>
+                          <button 
+                            onClick={handleGenerateDescription} 
+                            className="btn-modify-description"
+                            disabled={isGeneratingDescription}
+                            title="Generate a new AI description"
+                          >
+                            {isGeneratingDescription ? 'Generating...' : 'Modify Description'}
+                          </button>
+                        </div>
                         <p className="value">{selectedProduct.descriptions?.[0] || 'No description available'}</p>
                       </div>
                     </div>

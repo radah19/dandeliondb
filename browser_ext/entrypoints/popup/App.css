@@ -499,10 +499,40 @@ body {
   padding-top: 0.5rem;
 }
 
+.description-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .description .label {
   font-weight: 600;
   color: #555;
   font-size: 0.875rem;
+}
+
+.btn-modify-description {
+  background-color: #000;
+  color: #F2D863;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-family: 'Goudy Bookletter 1911', serif;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-modify-description:hover:not(:disabled) {
+  background-color: #333;
+  transform: translateY(-1px);
+}
+
+.btn-modify-description:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .description .value {

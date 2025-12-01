@@ -34,6 +34,7 @@ function SearchHomePage() {
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [lastSearchedQuery, setLastSearchedQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [recentSearches, setRecentSearches] = useState<Product[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -107,6 +108,7 @@ function SearchHomePage() {
 
     setIsSearching(true);
     setHasSearched(true);
+    setLastSearchedQuery(searchQuery);
     setCurrentPage(1);
     try {
       console.log('Making API request to:', `/product/${encodeURIComponent(searchQuery)}`);
@@ -318,7 +320,7 @@ function SearchHomePage() {
               </div>
             ) : (
               <div className="no-results">
-                <p>No products found for "{searchQuery}"</p>
+                <p>No products found for "{lastSearchedQuery}"</p>
                 <p className="hint">Try searching with different keywords</p>
               </div>
             )}
