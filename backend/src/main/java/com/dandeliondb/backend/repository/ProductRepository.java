@@ -37,7 +37,7 @@ public class ProductRepository {
                 .map(Product::getName)
                 .toList();
 
-        List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 5, 0.90);
+        List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 20, 0.90);
 
         Map<String, List<Product>> productsByName = all.stream()
                 .collect(Collectors.groupingBy(Product::getName));
