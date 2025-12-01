@@ -12,7 +12,9 @@ export default defineConfig({
       48: '/icon/dandeliondb_flower.png',
       96: '/icon/dandeliondb_flower.png',
       128: '/icon/dandeliondb_flower.png'
-    }
+    },
+    description: "This extension allows you to integrate DandelionDB's autofill features into your IMS/storepage tech solutions",
+    name: "DandelionDB",
   },
   runner: {
     disabled: true  // Disable auto-opening browser

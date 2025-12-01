@@ -159,14 +159,14 @@ public class ProductRepository {
 
                 // Scan descriptions for keyword
                 for (String desc: p.getDescriptions()) {
-                    if (desc.contains(keyword)) {
+                    if (desc.toLowerCase().contains(keyword.toLowerCase())) {
                         addFlag = true;
                         break;
                     }
                 }
 
                 // Check name for keyword
-                if (p.getName().contains(keyword)) addFlag = true;
+                if (p.getName().toLowerCase().contains(keyword.toLowerCase())) addFlag = true;
 
                 if (addFlag) {
                     new_ls.add(p);

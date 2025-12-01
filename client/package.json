@@ -17,6 +17,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5",
+    "react-select": "^5.10.2",
     "serve": "^14.2.5",
     "typescript-cookie": "^1.0.6",
     "validator": "^13.15.23"

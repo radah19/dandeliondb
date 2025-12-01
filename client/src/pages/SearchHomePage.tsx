@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getCookie } from 'typescript-cookie';
 import './SearchHomePage.css';
 import { apiClient } from '../services/api';
+import Select from 'react-select';
 
 interface Product {
   id?: number;
@@ -40,14 +41,14 @@ function SearchHomePage() {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [moreOptions, setMoreOptions] = useState(false);
   const [wasMoreOptionsSearch, setWasMoreOptionsSearch] = useState(false);
-  const [availableBrands, setAvailableBrands] = useState<String[]>([]);
-  const [availableTags, setAvailableTags] = useState<String[]>([]);
-  const [advancedSearchQuery, setAdvancedSearchQuery] = useState({
+  const [availableBrands, setAvailableBrands] = useState<SelectOption[]>([]);
+  const [availableTags, setAvailableTags] = useState<SelectOption[]>([]);
+  const [advancedSearchQuery, setAdvancedSearchQuery] = useState<AdvancedSearchQuery>({
     upc: "", sku: "", ean: "",
     brands: [],
     tags: [],
     keyword: ""
-  })
+  });
   // const navigate = useNavigate();  
 
   const RESULTS_PER_PAGE = 6;
@@ -118,12 +119,16 @@ function SearchHomePage() {
     try {
       const res = await apiClient.fetch(`/product/get-brands`, {
         method: 'GET'
-      });
+      })
 
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
-          setAvailableBrands(data);
+          const brands: SelectOption[] = data.map(b => ({
+            value: b,
+            label: b
+          }));
+          setAvailableBrands(brands);
         }
       } else {
         console.log('Fetch brands endpoint returned:', res.status);
@@ -145,7 +150,11 @@ function SearchHomePage() {
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
-          setAvailableTags(data);
+          const tags: SelectOption[] = data.map(t => ({
+            value: t,
+            label: t
+          }));
+          setAvailableTags(tags);
         }
       } else {
         console.log('Fetch brands endpoint returned:', res.status);
@@ -161,7 +170,7 @@ function SearchHomePage() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Search triggered with query:', searchQuery);
-    if (!searchQuery.trim()) return;
+    if (!moreOptions && !searchQuery.trim()) return;
 
     setIsSearching(true);
     setHasSearched(true);
@@ -179,8 +188,8 @@ function SearchHomePage() {
           method: 'POST',
           body: JSON.stringify({
             name: searchQuery,
-            brands: advancedSearchQuery.brands,
-            tags: advancedSearchQuery.tags,
+            brands: advancedSearchQuery.brands.map(b => b.value),
+            tags: advancedSearchQuery.tags.map(t => t.value),
             keyword: advancedSearchQuery.keyword,
             upc: advancedSearchQuery.upc,
             sku: advancedSearchQuery.sku,
@@ -258,27 +267,123 @@ function SearchHomePage() {
           
           <form onSubmit={handleSearch} className="search-form">
             <div className="search-input-wrapper">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by product name, UPC, or SKU..."
-                className="search-input"
-                disabled={isSearching}
-              />
-              <button type="submit" className="search-button" disabled={isSearching}>
-                {isSearching ? 'Searching...' : 'Search'}
-              </button>
-              <button onClick={(e) => {e.preventDefault(); setMoreOptions(!moreOptions);}} className="search-button" disabled={isSearching}>
-                More Options
-              </button>
+              <div className="search-input-wrapper-child">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by product name"
+                  className="search-input"
+                  disabled={isSearching}
+                />
+                <button type="submit" className="search-button" disabled={isSearching}>
+                  {isSearching ? 'Searching...' : 'Search'}
+                </button>
+                <button onClick={(e) => {e.preventDefault(); setMoreOptions(!moreOptions);}} className="search-button" disabled={isSearching}>
+                  More Options
+                </button>
+              </div>
+              {
+                moreOptions ? 
+                  <div>
+                    {/* Advanced Search Parameters */}
+                    <div className="search-input-wrapper-child">
+                      <div className='search-form'>
+                        <label>
+                          Brands:
+                        </label>
+                        <Select
+                          isMulti
+                          isSearchable
+                          options={availableBrands}
+                          value={advancedSearchQuery.brands}
+                          onChange={(selected) => setAdvancedSearchQuery({...advancedSearchQuery, brands: [...selected]})}
+                          styles={{
+                            control: (styles) => ({...styles, border: '2px solid #000', boxShadow: 'none', '&:hover': {borderColor: '#000'}}),
+                            option: (styles) => ({...styles, color: '#000'}),
+                            multiValue: (styles) => ({...styles, backgroundColor: '#F2D863'}),
+                            multiValueRemove: (styles) => ({...styles, color: '#000'})
+                          }}
+                        />
+                      </div>
+                      <div className="search-form">
+                        <label>
+                          Tags:
+                        </label>
+                        <Select
+                          isMulti
+                          options={availableTags}
+                          value={advancedSearchQuery.tags}
+                          onChange={(selected) => setAdvancedSearchQuery({...advancedSearchQuery, tags: [...selected]})}
+                          styles={{
+                            control: (styles) => ({...styles, border: '2px solid #000', boxShadow: 'none', '&:hover': {borderColor: '#000'}}),
+                            option: (styles) => ({...styles, color: '#000'}),
+                            multiValue: (styles) => ({...styles, backgroundColor: '#F2D863'}),
+                            multiValueRemove: (styles) => ({...styles, color: '#000'})
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="search-input-wrapper-child">
+                      <div className="search-input-label-input">
+                        <label>
+                          Keyword:
+                        </label>
+                        <input
+                          type="text"
+                          value={advancedSearchQuery.keyword}
+                          onChange={(e) => setAdvancedSearchQuery({...advancedSearchQuery, keyword: e.target.value})}
+                          placeholder="Search for a specific word in the name/description"
+                          className="search-input"
+                          disabled={isSearching}
+                        />
+                      </div>
+                    </div>
+                    <div className="search-input-wrapper-child">
+                      <div className="search-input-label-input">
+                        <label>
+                          UPC:
+                        </label>
+                        <input
+                          type="text"
+                          value={advancedSearchQuery.upc}
+                          onChange={(e) => setAdvancedSearchQuery({...advancedSearchQuery, upc: e.target.value})}
+                          placeholder="UPC Value"
+                          className="search-input"
+                          disabled={isSearching}
+                        />
+                      </div>
+                      <div className="search-input-label-input">
+                        <label>
+                          SKU:
+                        </label>
+                        <input
+                          type="text"
+                          value={advancedSearchQuery.sku}
+                          onChange={(e) => setAdvancedSearchQuery({...advancedSearchQuery, sku: e.target.value})}
+                          placeholder="SKU Value"
+                          className="search-input"
+                          disabled={isSearching}
+                        />
+                      </div>
+                      <div className="search-input-label-input">
+                        <label>
+                          EAN:
+                        </label>
+                        <input
+                          type="text"
+                          value={advancedSearchQuery.ean}
+                          onChange={(e) => setAdvancedSearchQuery({...advancedSearchQuery, ean: e.target.value})}
+                          placeholder="EAN Value"
+                          className="search-input"
+                          disabled={isSearching}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                : <></>
+              }
             </div>
-            {
-              moreOptions ? 
-                <div>
-                </div>
-              : <></>
-            }
           </form>
         </div>
 
@@ -424,3 +529,17 @@ function SearchHomePage() {
 }
 
 export default SearchHomePage;
+
+type AdvancedSearchQuery = {
+  upc: string;
+  sku: string;
+  ean: string;
+  brands: SelectOption[];
+  tags: SelectOption[];
+  keyword: string;
+};
+
+type SelectOption = {
+  value: String;
+  label: String;
+};

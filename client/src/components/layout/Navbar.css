@@ -29,6 +29,13 @@
   align-items: center;
 }
 
+.nav-logo-container {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .nav-logo {
   font-family: "Goudy Bookletter 1911", serif;
   font-size: 2.5rem;

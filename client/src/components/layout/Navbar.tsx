@@ -40,7 +40,10 @@ function Navbar({user, setUser}: Props) {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <h1 className="nav-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>DandelionDB</h1>
+        <div className="nav-logo-container" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <h1 className="nav-logo">DandelionDB</h1>
+          <img src='/dandeliondb_flower.svg' />
+        </div>
           {
             (user != undefined && user.email != undefined && user.email !== "") ?
               // User is logged in!
