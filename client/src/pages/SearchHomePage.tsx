@@ -38,6 +38,17 @@ function SearchHomePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [recentSearches, setRecentSearches] = useState<Product[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [moreOptions, setMoreOptions] = useState(false);
+  const [wasMoreOptionsSearch, setWasMoreOptionsSearch] = useState(false);
+  const [availableBrands, setAvailableBrands] = useState<String[]>([]);
+  const [availableTags, setAvailableTags] = useState<String[]>([]);
+  const [advancedSearchQuery, setAdvancedSearchQuery] = useState({
+    upc: "", sku: "", ean: "",
+    brands: [],
+    tags: [],
+    keyword: ""
+  })
+  // const navigate = useNavigate();  
 
   const RESULTS_PER_PAGE = 6;
   const CAROUSEL_ITEMS_PER_PAGE = 3;
@@ -53,6 +64,8 @@ function SearchHomePage() {
 
   useEffect(() => {
     fetchSearchHistory();
+    fetchAllAvailableBrands();
+    fetchAllAvailableTags();
   }, []);
 
   // Restore search state when coming back from product detail page
@@ -101,6 +114,50 @@ function SearchHomePage() {
     }
   };
 
+  const fetchAllAvailableBrands = async () => {
+    try {
+      const res = await apiClient.fetch(`/product/get-brands`, {
+        method: 'GET'
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setAvailableBrands(data);
+        }
+      } else {
+        console.log('Fetch brands endpoint returned:', res.status);
+        // If endpoint doesn't exist yet, just don't show recent searches
+        setAvailableBrands([]);
+      }
+    } catch (err) {
+      console.error('Error fetching brands list:', err);
+      setAvailableBrands([]);
+    }
+  }
+
+  const fetchAllAvailableTags = async () => {
+    try {
+      const res = await apiClient.fetch(`/product/get-tags`, {
+        method: 'GET'
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setAvailableTags(data);
+        }
+      } else {
+        console.log('Fetch brands endpoint returned:', res.status);
+        // If endpoint doesn't exist yet, just don't show recent searches
+        setAvailableTags([]);
+      }
+    } catch (err) {
+      console.error('Error fetching brands list:', err);
+      setAvailableTags([]);
+    }
+  }
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Search triggered with query:', searchQuery);
@@ -109,12 +166,33 @@ function SearchHomePage() {
     setIsSearching(true);
     setHasSearched(true);
     setLastSearchedQuery(searchQuery);
+    setWasMoreOptionsSearch(moreOptions);
     setCurrentPage(1);
     try {
       console.log('Making API request to:', `/product/${encodeURIComponent(searchQuery)}`);
-      const res = await apiClient.fetch(`/product/${encodeURIComponent(searchQuery)}`, { 
-        method: 'GET' 
-      });
+
+      let res: Response;
+
+      if (moreOptions) {
+        // Perform Advanced Search
+        res = await apiClient.fetch(`/product`, { 
+          method: 'POST',
+          body: JSON.stringify({
+            name: searchQuery,
+            brands: advancedSearchQuery.brands,
+            tags: advancedSearchQuery.tags,
+            keyword: advancedSearchQuery.keyword,
+            upc: advancedSearchQuery.upc,
+            sku: advancedSearchQuery.sku,
+            ean: advancedSearchQuery.ean
+          }) 
+        });
+      } else {
+        // Perform Normal Search
+        res = await apiClient.fetch(`/product/${encodeURIComponent(searchQuery)}`, { 
+          method: 'GET' 
+        });
+      }
 
       console.log('API response status:', res.status);
       if (!res.ok) {
@@ -191,7 +269,16 @@ function SearchHomePage() {
               <button type="submit" className="search-button" disabled={isSearching}>
                 {isSearching ? 'Searching...' : 'Search'}
               </button>
+              <button onClick={(e) => {e.preventDefault(); setMoreOptions(!moreOptions);}} className="search-button" disabled={isSearching}>
+                More Options
+              </button>
             </div>
+            {
+              moreOptions ? 
+                <div>
+                </div>
+              : <></>
+            }
           </form>
         </div>
 
@@ -320,7 +407,12 @@ function SearchHomePage() {
               </div>
             ) : (
               <div className="no-results">
-                <p>No products found for "{lastSearchedQuery}"</p>
+                {
+                  wasMoreOptionsSearch ? 
+                    <p>No products found with provided parameters</p>
+                  :
+                    <p>No products found for "{lastSearchedQuery}"</p>
+                }
                 <p className="hint">Try searching with different keywords</p>
               </div>
             )}

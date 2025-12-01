@@ -10,8 +10,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetItemEnhancedReques
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetResultPageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.ReadBatch;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -83,5 +82,113 @@ public class ProductRepository {
 
         return batchResults.resultsForTable(productTable).stream()
                 .collect(Collectors.toList());
+    }
+
+    public List<String> getAllAvailableBrands() {
+        List<Product> all = getAllProducts();
+
+        TreeSet<String> brands = new TreeSet<>();
+
+        for (Product p : all) {
+            brands.add(p.getBrand());
+        }
+
+        return brands.stream().toList();
+    }
+
+    public List<String> getAllAvailableTags() {
+        List<Product> all = getAllProducts();
+
+        TreeSet<String> tags = new TreeSet<>();
+
+        for (Product p: all) {
+            tags.addAll(p.getTags());
+        }
+
+        return tags.stream().toList();
+    }
+
+    public List<Product> getProductByAttribute(String inputName, List<String> brands, List<String> tags, String keyword, String upc, String sku, String ean) {
+        List<Product> result_ls = getAllProducts();
+
+        // Filter by UPC, SKU, and EAN if provided
+        if (upc != null && !upc.isEmpty())
+            result_ls = result_ls.stream().filter(p -> p.getUpc() != null && p.getUpc().equals(upc)).toList();
+        if (sku != null && !sku.isEmpty())
+            result_ls = result_ls.stream().filter(p -> p.getSku() != null && p.getSku().equals(sku)).toList();
+        if (ean != null && !ean.isEmpty())
+            result_ls = result_ls.stream().filter(p -> p.getEan() != null && p.getEan().equals(ean)).toList();
+
+        // In case we either found no items or 1 item with the provided UPC, SKU, or EAN - we want to break as further
+        // filtering won't do anything. UPCs, SKUs, and EANs could still potentially overlap, so we want to continue
+        // filtering in case we can do more filtering for the overlapping entries.
+        if (result_ls.size() <= 1) return result_ls;
+
+        // Filter by brands if provided
+        if (brands != null && !brands.isEmpty()) {
+            result_ls = result_ls.stream().filter(p -> brands.contains(p.getBrand())).toList();
+        }
+
+        // Filter by tags if provided
+        if (tags != null && !tags.isEmpty()) {
+            result_ls = result_ls.stream().filter(p -> intersectionExists(tags, p.getTags())).toList();
+        }
+
+        // Filter by inputName if provided
+        if (inputName != null && !inputName.isEmpty()) {
+            List<String> names = result_ls.stream()
+                    .map(Product::getName)
+                    .toList();
+
+            List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 5, 0.90);
+
+            Map<String, List<Product>> productsByName = result_ls.stream()
+                    .collect(Collectors.groupingBy(Product::getName));
+
+            result_ls = topNames.stream()
+                    .flatMap(name -> productsByName.getOrDefault(name, List.of()).stream())
+                    .collect(Collectors.toList());
+        }
+
+        // Filter by keyword if provided
+        if (keyword != null && !keyword.isEmpty()) {
+            List<Product> new_ls = new ArrayList<>();
+
+            for (Product p: result_ls) {
+                boolean addFlag = false;
+
+                // Scan descriptions for keyword
+                for (String desc: p.getDescriptions()) {
+                    if (desc.contains(keyword)) {
+                        addFlag = true;
+                        break;
+                    }
+                }
+
+                // Check name for keyword
+                if (p.getName().contains(keyword)) addFlag = true;
+
+                if (addFlag) {
+                    new_ls.add(p);
+                }
+
+                if (new_ls.size() >= 5) {
+                    break;
+                }
+            }
+
+            result_ls = new_ls;
+        }
+
+        return result_ls.stream().limit(5).toList();
+    }
+
+    private boolean intersectionExists(List<String> ls1, List<String> ls2) {
+        for (String str: ls1) {
+            if (ls2.contains(str)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
