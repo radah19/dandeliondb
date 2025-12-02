@@ -305,18 +305,9 @@ function App() {
     }
   };
 
-  const handleProductSelect = async (product: Product) => {
+  const handleProductSelect = (product: Product) => {
     setSelectedProduct(product);
     setCurrentImageIndex(0); // Reset to first image when selecting a product
-    
-    try {
-      const searchResponse = await apiClient.fetch(
-        `/search/${encodeURIComponent(email)}/${encodeURIComponent(product.name)}/${encodeURIComponent(product.brand)}`,
-        { method: 'POST' }
-      );
-    } catch (err) {
-      console.warn('Failed to track search history:', err);
-    }
   };
 
   const handleBackToResults = () => {
@@ -391,14 +382,19 @@ function App() {
         autofillSettings: autofillFields
       });      
       if (response?.success && response.fieldsFilled > 0) {
-        // Moved search history out of here
+        try {
+          await apiClient.fetch(
+            `/search/${encodeURIComponent(email)}/${encodeURIComponent(selectedProduct.name)}/${encodeURIComponent(selectedProduct.brand)}`,
+            { method: 'POST' }
+          );
+        } catch (err) {
+          console.warn('Failed to track search history:', err);
+        }
       } else {
-        // don't show alert - user can see the issue from lack of visual feedback
         console.warn('[DandelionDB] No fields filled. Make sure you\'re on a product form page.');
       }
     } catch (err) {
       console.error('Error autofilling:', err);
-      // only alert on actual errors, not missing fields?? This is not working
     }
   };
 
