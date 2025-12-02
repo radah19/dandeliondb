@@ -305,9 +305,18 @@ function App() {
     }
   };
 
-  const handleProductSelect = (product: Product) => {
+  const handleProductSelect = async (product: Product) => {
     setSelectedProduct(product);
     setCurrentImageIndex(0); // Reset to first image when selecting a product
+    
+    try {
+      const searchResponse = await apiClient.fetch(
+        `/search/${encodeURIComponent(email)}/${encodeURIComponent(product.name)}/${encodeURIComponent(product.brand)}`,
+        { method: 'POST' }
+      );
+    } catch (err) {
+      console.warn('Failed to track search history:', err);
+    }
   };
 
   const handleBackToResults = () => {
@@ -382,17 +391,7 @@ function App() {
         autofillSettings: autofillFields
       });      
       if (response?.success && response.fieldsFilled > 0) {
-              console.log('[DandelionDB] Attempting to track search history for:', selectedProduct.name);
-        try {
-          const searchResponse = await apiClient.fetch(
-            `/search/${encodeURIComponent(email)}/${encodeURIComponent(selectedProduct.name)}/${encodeURIComponent(selectedProduct.brand)}`,
-            { method: 'POST' }
-          );
-          console.log('[DandelionDB] Search history response:', searchResponse.status);
-        } catch (err) {
-          console.warn('[DandelionDB] Failed to track search history:', err);
-          // Don't fail the autofill if tracking fails
-        }
+        // Moved search history out of here
       } else {
         // don't show alert - user can see the issue from lack of visual feedback
         console.warn('[DandelionDB] No fields filled. Make sure you\'re on a product form page.');
