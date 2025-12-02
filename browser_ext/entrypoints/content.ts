@@ -11,6 +11,10 @@ export default defineContentScript({
     // Track if this is the first autofill after page load
     let isFirstAutofill = true;
     
+    // Track processed image URLs globally to prevent duplicates across autofill calls
+    const globalProcessedUrls = new Set<string>();
+    let globalCurrentlyProcessing = false;
+    
     // only log on supported platforms
     if (isLightspeed || isBigCommerce) {
       console.log(`[DandelionDB] Active on ${isLightspeed ? 'Lightspeed' : 'BigCommerce'}`);
@@ -152,19 +156,52 @@ export default defineContentScript({
       }
 
       let completedCount = 0;
+      // Use global variables to track across function calls
+      console.log(`[DandelionDB] Starting image upload. Global processed URLs: ${globalProcessedUrls.size}, Currently processing: ${globalCurrentlyProcessing}`);
 
       // Process images sequentially
       const processImage = (index: number) => {
         if (index >= imageUrls.length) {
           console.log(`[DandelionDB] Completed uploading ${completedCount}/${imageUrls.length} images`);
+          globalCurrentlyProcessing = false;
           return;
         }
 
         const url = imageUrls[index];
+        
+        // Skip if already processed or currently processing
+        if (globalProcessedUrls.has(url)) {
+          console.log(`[DandelionDB] Skipping already processed image: ${url}`);
+          processImage(index + 1);
+          return;
+        }
+        
+        if (globalCurrentlyProcessing) {
+          console.log('[DandelionDB] Already processing an image, waiting...');
+          setTimeout(() => processImage(index), 500);
+          return;
+        }
+        
+        globalCurrentlyProcessing = true;
         console.log(`[DandelionDB] Processing image ${index + 1}/${imageUrls.length}: ${url}`);
+        console.log(`[DandelionDB] Already processed URLs:`, Array.from(globalProcessedUrls));
+        
+        // Make sure no modal is open before clicking add button
+        const existingModal = document.querySelector('.modal') || document.querySelector('[role="dialog"]');
+        if (existingModal && document.body.contains(existingModal)) {
+          console.log('[DandelionDB] Found existing modal, waiting for it to close...');
+          globalCurrentlyProcessing = false;
+          setTimeout(() => processImage(index), 500);
+          return;
+        }
+        
+        // Mark this URL as being processed
+        globalProcessedUrls.add(url);
+        console.log(`[DandelionDB] Added URL to processed set. Total processed: ${globalProcessedUrls.size}`);
         
         // Click the button for each url
         addFromUrlButton.click();
+        console.log('[DandelionDB] Clicked add from URL button');
         
         // Wait for modal to appear and fill in the URL
         setTimeout(() => {
@@ -172,8 +209,20 @@ export default defineContentScript({
           const saveButton = document.querySelector('button.button--primary[ng-click="$ctrl.save()"]') as HTMLButtonElement;
           
           if (urlInput && saveButton) {
+            // Check if this modal already has a URL (shouldn't happen but let's be safe)
+            if (urlInput.value && urlInput.value === url) {
+              console.warn(`[DandelionDB] Modal already has URL ${url}, skipping duplicate`);
+              globalCurrentlyProcessing = false;
+              setTimeout(() => processImage(index + 1), 500);
+              return;
+            }
+            
+            // Clear any existing value first
+            urlInput.value = '';
+            
             // Set the URL value
             urlInput.value = url;
+            console.log(`[DandelionDB] Set URL input to: ${url}`);
             
             // Angular BS
             urlInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -199,6 +248,7 @@ export default defineContentScript({
               if (!currentSaveButton) {
                 console.warn(`[DandelionDB] Save button disappeared for image ${index + 1}`);
                 clearInterval(pollSaveButton);
+                globalCurrentlyProcessing = false;
                 // Try next image
                 setTimeout(() => processImage(index + 1), 1000);
                 return;
@@ -223,19 +273,57 @@ export default defineContentScript({
                     if (!modal || (modal as HTMLElement).style.display === 'none' || !document.body.contains(modal)) {
                       clearInterval(checkModalClosed);
                       console.log(`[DandelionDB] Modal closed for image ${index + 1}, proceeding to next`);
+                      globalCurrentlyProcessing = false;
                       // Process next image
                       setTimeout(() => processImage(index + 1), 500);
                     } else if (modalCheckAttempts > 20) {
-                      // If modal doesn't close after 2 seconds, force continue
+                      // If modal doesn't close after 2 seconds, force close it
                       clearInterval(checkModalClosed);
-                      console.warn(`[DandelionDB] Modal didn't close in time, forcing next image`);
-                      setTimeout(() => processImage(index + 1), 500);
+                      console.warn(`[DandelionDB] Modal didn't close in time, forcing close`);
+                      
+                      // Try to find and click close/cancel button
+                      const closeButton = document.querySelector('.modal button[ng-click="$ctrl.cancel()"]') as HTMLButtonElement ||
+                                         document.querySelector('.modal .close') as HTMLButtonElement ||
+                                         document.querySelector('.modal [aria-label="Close"]') as HTMLButtonElement;
+                      
+                      if (closeButton) {
+                        console.log('[DandelionDB] Clicking close button');
+                        closeButton.click();
+                        // Wait longer after clicking close
+                        setTimeout(() => {
+                          // Double check modal is gone
+                          const stillThere = document.querySelector('.modal');
+                          if (stillThere) {
+                            console.log('[DandelionDB] Modal still present after close click, removing');
+                            (stillThere as HTMLElement).remove();
+                            const backdrop = document.querySelector('.modal-backdrop');
+                            if (backdrop) backdrop.remove();
+                          }
+                          globalCurrentlyProcessing = false;
+                          setTimeout(() => processImage(index + 1), 500);
+                        }, 500);
+                      } else {
+                        // Force remove modal from DOM
+                        console.log('[DandelionDB] No close button found, removing modal from DOM');
+                        if (modal) {
+                          (modal as HTMLElement).remove();
+                        }
+                        // Also remove backdrop if exists
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                          backdrop.remove();
+                        }
+                        globalCurrentlyProcessing = false;
+                        // Wait longer before continuing
+                        setTimeout(() => processImage(index + 1), 1000);
+                      }
                     }
                   }, 100);
                 }, 500);
               } else if (pollAttempts >= maxPollAttempts) {
                 clearInterval(pollSaveButton);
                 console.error(`[DandelionDB] Save button never enabled for image ${index + 1}, skipping`);
+                globalCurrentlyProcessing = false;
                 // Try next image anyway
                 setTimeout(() => processImage(index + 1), 1000);
               }
@@ -243,6 +331,7 @@ export default defineContentScript({
             
           } else {
             console.warn('[DandelionDB] Could not find URL input or Save button in modal');
+            globalCurrentlyProcessing = false;
             // Try next image
             setTimeout(() => processImage(index + 1), 1000);
           }
