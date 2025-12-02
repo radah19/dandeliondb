@@ -15,6 +15,7 @@ export default defineConfig({
     },
     description: "This extension allows you to integrate DandelionDB's autofill features into your IMS/storepage tech solutions",
     name: "DandelionDB",
+    version: "1.0.0"
   },
   runner: {
     disabled: true  // Disable auto-opening browser
