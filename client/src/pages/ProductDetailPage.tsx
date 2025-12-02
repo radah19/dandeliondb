@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './ProductDetailPage.css';
 import { apiClient } from '../services/api';
+import { getCookie } from 'typescript-cookie';
 import prevIcon from '../assets/prev-image.svg';
 import nextIcon from '../assets/next-image.svg';
 
@@ -53,6 +54,22 @@ function ProductDetailPage() {
         const data = await res.json();
         setProduct(data);
         setError(null);
+        
+        try {
+          const sessionUser = getCookie("sessionUser");
+          if (sessionUser) {
+            const user = JSON.parse(sessionUser);
+            const email = user.email;
+            
+            await apiClient.fetch(
+              `/search/${encodeURIComponent(email)}/${encodeURIComponent(productName)}/${encodeURIComponent(productBrand)}`,
+              { method: 'POST' }
+            );
+
+          }
+        } catch (err) {
+          console.warn('Failed to track search history:', err);
+        }
       } else {
         setError('Product not found');
       }

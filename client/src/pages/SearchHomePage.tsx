@@ -390,7 +390,7 @@ function SearchHomePage() {
         {/* recent searches */}
         {!hasSearched && recentSearches.length > 0 && (
           <div className="recent-searches-section">
-            <h3 className="recent-searches-header">Recent Autofills</h3>
+            <h3 className="recent-searches-header">Recent Searches</h3>
             <div className="carousel-container">
               <button 
                 className="carousel-btn carousel-btn-prev"

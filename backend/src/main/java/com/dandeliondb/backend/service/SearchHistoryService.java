@@ -36,7 +36,20 @@ public class SearchHistoryService {
             System.out.println(key.getName());
         }
 
-        return productRepo.batchGetProducts(productKeys);
+        List<Product> products = productRepo.batchGetProducts(productKeys);
+        
+        List<Product> orderedProducts = new ArrayList<>();
+        for (Product key : productKeys) {
+            for (Product product : products) {
+                if (product.getName().equals(key.getName()) && 
+                    product.getBrand().equals(key.getBrand())) {
+                    orderedProducts.add(product);
+                    break;
+                }
+            }
+        }
+        
+        return orderedProducts;
     }
 
     public void addSearch(SearchHistory searchHistory) {
