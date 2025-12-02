@@ -99,26 +99,33 @@ function App() {
       if (typeof browser === 'undefined') return;
 
       browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
-        if (tabs[0]?.url) {
+        if (tabs[0]?.url && tabs[0]?.id) {
           const url = tabs[0].url.toLowerCase();
+          const tabId = tabs[0].id;
           setCurrentUrl(tabs[0].url);
           
           const isSupported = url.includes('lightspeed') || url.includes('bigcommerce') || url.includes('merchantos');
           setIsSupportedPlatform(isSupported);
           
           if (isSupported) {
-            browser.runtime.sendMessage({ type: 'DETECT_FIELDS' })
-              .then((response: any) => {
-                if (response?.success) {
-                  setDetectedFields(response.fields);
-                } else {
+            // Add delay to ensure content script is fully loaded
+            setTimeout(() => {
+              console.log('[DandelionDB Popup] Sending DETECT_FIELDS message to tab:', tabId);
+              browser.runtime.sendMessage({ type: 'DETECT_FIELDS', tabId: tabId })
+                .then((response: any) => {
+                  console.log('[DandelionDB Popup] DETECT_FIELDS response:', response);
+                  if (response?.success) {
+                    setDetectedFields(response.fields);
+                  } else {
+                    console.warn('[DandelionDB Popup] No fields detected:', response?.error);
+                    setDetectedFields([]);
+                  }
+                })
+                .catch(err => {
+                  console.error('[DandelionDB Popup] Error detecting fields:', err);
                   setDetectedFields([]);
-                }
-              })
-              .catch(err => {
-                console.error('Error detecting fields:', err);
-                setDetectedFields([]);
-              });
+                });
+            }, 1000); // Increased delay to 1 second
           } else {
             setDetectedFields([]);
           }
@@ -375,9 +382,19 @@ function App() {
     if (autofillFields.images) filteredProduct.imageURLs = selectedProduct.imageURLs;
 
     try {
+      // Get current tab ID
+      const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+      const tabId = tabs[0]?.id;
+      
+      if (!tabId) {
+        alert('Could not find active tab');
+        return;
+      }
+      
       // send message to background script which will forward to all frames
       const response = await browser.runtime.sendMessage({
         type: 'FILL_FORM',
+        tabId: tabId,
         product: filteredProduct,
         autofillSettings: autofillFields
       });      
