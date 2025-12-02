@@ -53,6 +53,7 @@ function HomePage({ user }: HomePageProps) {
         <div className="hero-top-section">
           <div className="hero-section">
             <div className="hero-content">
+              <img src='/dandeliondb.svg' />
               <h1 className="hero-title">Simplify your toy store's workflow</h1>
               <p className="hero-description">
                 The complete toy product database built for independent stores.
