@@ -108,7 +108,6 @@ function App() {
           setIsSupportedPlatform(isSupported);
           
           if (isSupported) {
-            // Add delay to ensure content script is fully loaded
             setTimeout(() => {
               browser.runtime.sendMessage({ type: 'DETECT_FIELDS', tabId: tabId })
                 .then((response: any) => {
@@ -121,7 +120,7 @@ function App() {
                 .catch(err => {
                   setDetectedFields([]);
                 });
-            }, 1000); // Increased delay to 1 second
+            }, 1000);
           } else {
             setDetectedFields([]);
           }
@@ -130,12 +129,6 @@ function App() {
     };
 
     checkCurrentTab();
-    
-    window.addEventListener('focus', checkCurrentTab);
-    
-    return () => {
-      window.removeEventListener('focus', checkCurrentTab);
-    };
   }, []);
 
   const handleLogin = (e: FormEvent) => {
