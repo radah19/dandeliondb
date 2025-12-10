@@ -535,9 +535,9 @@ function App() {
         <div className="header">
           <h1 className="clickable-title" onClick={handleGoToHome}>DandelionDB</h1>
           <div className="header-buttons">
-            {/* <button className="database-btn" onClick={handleGoToDatabase}>
+            {<button className="database-btn" onClick={handleGoToDatabase}>
               Database
-            </button> */}
+            </button> }
             <button className="logout-btn" onClick={handleLogout}>
               Logout
             </button>
