@@ -30,6 +30,7 @@ export const LightspeedAdapter: PlatformAdapter = {
 
     return fields;
   },
+  
 
   fillField(field: HTMLInputElement | HTMLTextAreaElement | null, value: any, fieldName?: string): boolean {
     if (field && value != null) {
