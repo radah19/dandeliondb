@@ -26,7 +26,7 @@ public class SearchHistoryRepository {
         searchHistoryTable.putItem(searchHistory);
     }
 
-    public List<SearchHistory> getRecentSearches(String email, int limit) {
+    public List<SearchHistory> getRecentSearches(String email) {
         Key key = Key.builder()
                 .partitionValue(email)
                 .build();
@@ -37,7 +37,6 @@ public class SearchHistoryRepository {
                 .query(r -> r
                         .queryConditional(qc)
                         .scanIndexForward(false)
-                        .limit(limit)
                 )
                 .items()
                 .stream()

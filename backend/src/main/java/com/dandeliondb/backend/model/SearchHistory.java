@@ -13,7 +13,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 @DynamoDbBean
 public class SearchHistory {
     private String email;
-    private String sortKey;
     private String timestamp;
     private String name;
     private String brand;
@@ -24,7 +23,7 @@ public class SearchHistory {
     }
 
     @DynamoDbSortKey
-    public String getSortKey() {
-        return sortKey;
+    public String getTimestamp() {
+        return timestamp;
     }
 }

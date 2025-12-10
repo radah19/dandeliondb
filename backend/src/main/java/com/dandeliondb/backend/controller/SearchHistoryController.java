@@ -26,8 +26,7 @@ public class SearchHistoryController {
                                             @PathVariable String brand) {
         try {
             SearchHistory searchHistory =
-                    new SearchHistory(email, name + "#" + brand,
-                            String.valueOf(System.currentTimeMillis()), name, brand);
+                    new SearchHistory(email, String.valueOf(System.currentTimeMillis()), name, brand);
             searchHistoryService.addSearch(searchHistory);
             return ResponseEntity.status(HttpStatus.OK).body("added search");
         } catch (Exception e) {
