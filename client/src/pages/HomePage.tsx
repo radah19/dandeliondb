@@ -84,7 +84,7 @@ function HomePage({ user }: HomePageProps) {
               >
                 <h2>Built for Independent Toy Stores</h2>
                 <p>
-                  We know the struggle of dealing with incomplete product information from manufacturers.
+                  We know the struggle of dealing with incomplete product information from vendors.
                   DandelionDB is specifically designed to handle messy, real-world data—helping you build and maintain
                   your product catalog even when details are missing.
                 </p>
@@ -96,9 +96,8 @@ function HomePage({ user }: HomePageProps) {
               >
                 <h2>Smart Autofill</h2>
                 <p>
-                  Save time with our intelligent autofill system. As you type product information,
-                  DandelionDB suggests completions based on your existing catalog and common toy attributes,
-                  making data entry faster and more consistent.
+                  Eliminate hours of manual data entry with our smart autofill. Instantly populate product data,
+                  descriptions, identifiers, images and more onto your IMS and storepage all with the click of a button.
                 </p>
               </div>
 
@@ -109,8 +108,8 @@ function HomePage({ user }: HomePageProps) {
                 <h2>Traits-based Search Query System</h2>
                 <p>
                   Find exactly what you're looking for with our flexible search system.
-                  Search by any combination of product traits—age range, category, material, brand—even when
-                  some information is incomplete. Perfect for helping customers discover the right toys.
+                  Search by any combination of product traits—brand, keywords, tags—to pinpoint the right toy, 
+                  even when you don’t know its name.
                 </p>
               </div>
             </div>

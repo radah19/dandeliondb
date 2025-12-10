@@ -2,8 +2,6 @@ export default defineContentScript({
   matches: ['*://*/*'], // match all pages
   allFrames: true, // run in iframes too
   main() {
-    console.log('[DandelionDB Content Script] Loaded on:', window.location.href);
-    
     const currentUrl = window.location.href.toLowerCase();
     const isLightspeed = currentUrl.includes('lightspeed');
     const isBigCommerce = currentUrl.includes('bigcommerce');
@@ -15,16 +13,8 @@ export default defineContentScript({
     const globalProcessedUrls = new Set<string>();
     let globalCurrentlyProcessing = false;
     
-    // only log on supported platforms
-    if (isLightspeed || isBigCommerce) {
-      console.log(`[DandelionDB] Active on ${isLightspeed ? 'Lightspeed' : 'BigCommerce'}`);
-    }
-
     // function to identify product form fields
     function detectProductFields() {
-      console.log('[DandelionDB] detectProductFields called. isLightspeed:', isLightspeed, 'isBigCommerce:', isBigCommerce);
-      console.log('[DandelionDB] Current URL:', window.location.href);
-      
       const fields = {
         productName: null as HTMLInputElement | null,
         upc: null as HTMLInputElement | null,
@@ -37,7 +27,6 @@ export default defineContentScript({
 
       // Try Lightspeed-specific IDs first
       if (isLightspeed) {
-        console.log('[DandelionDB] Trying Lightspeed field detection...');
         fields.description = document.querySelector<HTMLInputElement>('#view_description');
         fields.upc = document.querySelector<HTMLInputElement>('input#view_upc[name="upc"]');
         fields.sku = document.querySelector<HTMLInputElement>('#view_shop_sku') || 
@@ -45,27 +34,10 @@ export default defineContentScript({
         fields.brand = document.querySelector<HTMLInputElement>('#react-select-2-input'); // Brand autocomplete
         fields.price = document.querySelector<HTMLInputElement>('#view_price_default');
         
-        console.log('[DandelionDB] Lightspeed query results:', {
-          description: fields.description,
-          upc: fields.upc,
-          sku: fields.sku,
-          brand: fields.brand,
-          price: fields.price
-        });
-        
         // Return early if we found Lightspeed fields
         if (fields.description || fields.upc || fields.sku) {
-          console.log('[DandelionDB] Detected Lightspeed fields:', {
-            description: !!fields.description,
-            upc: !!fields.upc,
-            sku: !!fields.sku,
-            brand: !!fields.brand,
-            price: !!fields.price
-          });
-          console.log('[DandelionDB] UPC field element:', fields.upc);
           return fields;
         }
-        console.log('[DandelionDB] No Lightspeed fields found, falling through to generic detection');
       }
 
       // BigCommerce-specific detection
@@ -131,16 +103,6 @@ export default defineContentScript({
         }
       });
 
-      console.log('[DandelionDB] Generic detection complete. Found fields:', {
-        productName: !!fields.productName,
-        upc: !!fields.upc,
-        sku: !!fields.sku,
-        description: !!fields.description,
-        brand: !!fields.brand,
-        price: !!fields.price,
-        images: !!fields.images
-      });
-
       return fields;
     }
 
@@ -151,18 +113,15 @@ export default defineContentScript({
       const addFromUrlButton = document.querySelector('button[ng-click="$ctrl.addFromUrl()"]') as HTMLButtonElement;
       
       if (!addFromUrlButton) {
-        console.warn('[DandelionDB] Add from URL button not found');
         return;
       }
 
       let completedCount = 0;
       // Use global variables to track across function calls
-      console.log(`[DandelionDB] Starting image upload. Global processed URLs: ${globalProcessedUrls.size}, Currently processing: ${globalCurrentlyProcessing}`);
 
       // Process images sequentially
       const processImage = (index: number) => {
         if (index >= imageUrls.length) {
-          console.log(`[DandelionDB] Completed uploading ${completedCount}/${imageUrls.length} images`);
           globalCurrentlyProcessing = false;
           return;
         }
@@ -171,25 +130,20 @@ export default defineContentScript({
         
         // Skip if already processed or currently processing
         if (globalProcessedUrls.has(url)) {
-          console.log(`[DandelionDB] Skipping already processed image: ${url}`);
           processImage(index + 1);
           return;
         }
         
         if (globalCurrentlyProcessing) {
-          console.log('[DandelionDB] Already processing an image, waiting...');
           setTimeout(() => processImage(index), 500);
           return;
         }
         
         globalCurrentlyProcessing = true;
-        console.log(`[DandelionDB] Processing image ${index + 1}/${imageUrls.length}: ${url}`);
-        console.log(`[DandelionDB] Already processed URLs:`, Array.from(globalProcessedUrls));
         
         // Make sure no modal is open before clicking add button
         const existingModal = document.querySelector('.modal') || document.querySelector('[role="dialog"]');
         if (existingModal && document.body.contains(existingModal)) {
-          console.log('[DandelionDB] Found existing modal, waiting for it to close...');
           globalCurrentlyProcessing = false;
           setTimeout(() => processImage(index), 500);
           return;
@@ -197,11 +151,9 @@ export default defineContentScript({
         
         // Mark this URL as being processed
         globalProcessedUrls.add(url);
-        console.log(`[DandelionDB] Added URL to processed set. Total processed: ${globalProcessedUrls.size}`);
         
         // Click the button for each url
         addFromUrlButton.click();
-        console.log('[DandelionDB] Clicked add from URL button');
         
         // Wait for modal to appear and fill in the URL
         setTimeout(() => {
@@ -211,7 +163,6 @@ export default defineContentScript({
           if (urlInput && saveButton) {
             // Check if this modal already has a URL (shouldn't happen but let's be safe)
             if (urlInput.value && urlInput.value === url) {
-              console.warn(`[DandelionDB] Modal already has URL ${url}, skipping duplicate`);
               globalCurrentlyProcessing = false;
               setTimeout(() => processImage(index + 1), 500);
               return;
@@ -222,7 +173,6 @@ export default defineContentScript({
             
             // Set the URL value
             urlInput.value = url;
-            console.log(`[DandelionDB] Set URL input to: ${url}`);
             
             // Angular BS
             urlInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -246,7 +196,6 @@ export default defineContentScript({
               const currentSaveButton = document.querySelector('button.button--primary[ng-click="$ctrl.save()"]') as HTMLButtonElement;
               
               if (!currentSaveButton) {
-                console.warn(`[DandelionDB] Save button disappeared for image ${index + 1}`);
                 clearInterval(pollSaveButton);
                 globalCurrentlyProcessing = false;
                 // Try next image
@@ -256,13 +205,11 @@ export default defineContentScript({
               
               if (!currentSaveButton.disabled) {
                 clearInterval(pollSaveButton);
-                console.log(`[DandelionDB] Save button ready after ${pollAttempts * 500}ms, clicking...`);
                 currentSaveButton.click();
                 
                 // Wait for modal to close
                 setTimeout(() => {
                   completedCount++;
-                  console.log(`[DandelionDB] Added image ${index + 1}/${imageUrls.length}`);
                   
                   // Poll for modal to close before processing next image
                   let modalCheckAttempts = 0;
@@ -272,14 +219,12 @@ export default defineContentScript({
                     
                     if (!modal || (modal as HTMLElement).style.display === 'none' || !document.body.contains(modal)) {
                       clearInterval(checkModalClosed);
-                      console.log(`[DandelionDB] Modal closed for image ${index + 1}, proceeding to next`);
                       globalCurrentlyProcessing = false;
                       // Process next image
                       setTimeout(() => processImage(index + 1), 500);
                     } else if (modalCheckAttempts > 20) {
                       // If modal doesn't close after 2 seconds, force close it
                       clearInterval(checkModalClosed);
-                      console.warn(`[DandelionDB] Modal didn't close in time, forcing close`);
                       
                       // Try to find and click close/cancel button
                       const closeButton = document.querySelector('.modal button[ng-click="$ctrl.cancel()"]') as HTMLButtonElement ||
@@ -287,14 +232,12 @@ export default defineContentScript({
                                          document.querySelector('.modal [aria-label="Close"]') as HTMLButtonElement;
                       
                       if (closeButton) {
-                        console.log('[DandelionDB] Clicking close button');
                         closeButton.click();
                         // Wait longer after clicking close
                         setTimeout(() => {
                           // Double check modal is gone
                           const stillThere = document.querySelector('.modal');
                           if (stillThere) {
-                            console.log('[DandelionDB] Modal still present after close click, removing');
                             (stillThere as HTMLElement).remove();
                             const backdrop = document.querySelector('.modal-backdrop');
                             if (backdrop) backdrop.remove();
@@ -304,7 +247,6 @@ export default defineContentScript({
                         }, 500);
                       } else {
                         // Force remove modal from DOM
-                        console.log('[DandelionDB] No close button found, removing modal from DOM');
                         if (modal) {
                           (modal as HTMLElement).remove();
                         }
@@ -322,7 +264,6 @@ export default defineContentScript({
                 }, 500);
               } else if (pollAttempts >= maxPollAttempts) {
                 clearInterval(pollSaveButton);
-                console.error(`[DandelionDB] Save button never enabled for image ${index + 1}, skipping`);
                 globalCurrentlyProcessing = false;
                 // Try next image anyway
                 setTimeout(() => processImage(index + 1), 1000);
@@ -330,7 +271,6 @@ export default defineContentScript({
             }, 500);
             
           } else {
-            console.warn('[DandelionDB] Could not find URL input or Save button in modal');
             globalCurrentlyProcessing = false;
             // Try next image
             setTimeout(() => processImage(index + 1), 1000);
@@ -379,14 +319,6 @@ export default defineContentScript({
     }
 
     function autofillFields(productData: any, settings: any = null) {
-      console.log('[DandelionDB] autofillFields called with:', { 
-        productData, 
-        settings,
-        currentUrl: window.location.href,
-        isLightspeed,
-        isBigCommerce
-      });
-      
       const fields = detectProductFields();
       let filledCount = 0;
 
@@ -404,12 +336,6 @@ export default defineContentScript({
       // helper to fill field and trigger events
       const fillField = (field: HTMLInputElement | HTMLTextAreaElement | null, value: any, fieldName?: string) => {
         if (field && value != null) {
-          console.log(`[DandelionDB] Filling ${fieldName || 'field'}:`, {
-            id: field.id,
-            name: field.getAttribute('name'),
-            value: value.toString()
-          });
-          
           field.value = value.toString();
           
           // Trigger standard events
@@ -479,7 +405,6 @@ export default defineContentScript({
               setTimeout(() => {
                 const firstOption = document.querySelector('li[role="option"]:not([aria-disabled="true"])');
                 if (firstOption instanceof HTMLElement) {
-                  console.log('[DandelionDB] Clicking first brand option:', firstOption.textContent?.trim());
                   firstOption.click();
                 }
               }, 500);
@@ -505,19 +430,15 @@ export default defineContentScript({
 
       // Add images from URLs if enabled
       if (autofillSettings.images && productData.imageURLs && productData.imageURLs.length > 0) {
-        console.log("[DandelionDB] Starting image upload...");
         addImagesFromUrls(productData.imageURLs);
       }
 
-      console.log(`[DandelionDB] Autofill completed. Fields filled: ${filledCount}`);
       return filledCount;
     }
 
 
     // Listen for messages from popup
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log('[DandelionDB Content] Received message:', message.type, 'in frame:', window.location.href);
-      
       if (message.type === 'FILL_FORM') {
         const filled = autofillFields(message.product, message.autofillSettings);
         sendResponse({ success: true, fieldsFilled: filled });
@@ -526,7 +447,6 @@ export default defineContentScript({
         const detectedFieldTypes = Object.entries(fields)
           .filter(([_, element]) => element !== null)
           .map(([fieldType]) => fieldType);
-        console.log('[DandelionDB Content] Detected field types:', detectedFieldTypes);
         sendResponse({ success: true, fields: detectedFieldTypes });
       }
       return true; // Keep message channel open for async response

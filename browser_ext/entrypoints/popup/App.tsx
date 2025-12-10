@@ -110,19 +110,15 @@ function App() {
           if (isSupported) {
             // Add delay to ensure content script is fully loaded
             setTimeout(() => {
-              console.log('[DandelionDB Popup] Sending DETECT_FIELDS message to tab:', tabId);
               browser.runtime.sendMessage({ type: 'DETECT_FIELDS', tabId: tabId })
                 .then((response: any) => {
-                  console.log('[DandelionDB Popup] DETECT_FIELDS response:', response);
                   if (response?.success) {
                     setDetectedFields(response.fields);
                   } else {
-                    console.warn('[DandelionDB Popup] No fields detected:', response?.error);
                     setDetectedFields([]);
                   }
                 })
                 .catch(err => {
-                  console.error('[DandelionDB Popup] Error detecting fields:', err);
                   setDetectedFields([]);
                 });
             }, 1000); // Increased delay to 1 second
@@ -292,7 +288,6 @@ function App() {
       const res = await apiClient.fetch(`/product/${encodeURIComponent(queryToSearch)}`, { method: 'GET' });
 
       if (!res.ok) {
-        console.error('[DandelionDB] Search request failed', res.status);
         setSearchResults([]);
       } else {
         const data = await res.json();
@@ -304,7 +299,6 @@ function App() {
         }
       }
     } catch (err) {
-      console.error('[DandelionDB] Error searching products:', err);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -347,7 +341,6 @@ function App() {
       });
 
       if (!response.ok) {
-        console.error('[DandelionDB] Failed to generate description:', response.status);
         alert('Failed to generate description. Please try again.');
         return;
       }
@@ -360,7 +353,6 @@ function App() {
         descriptions: [generatedDescription]
       } as Product);
     } catch (error) {
-      console.error('[DandelionDB] Error generating description:', error);
       alert('Error generating description. Please try again.');
     } finally {
       setIsGeneratingDescription(false);
@@ -405,10 +397,7 @@ function App() {
             { method: 'POST' }
           );
         } catch (err) {
-          console.warn('Failed to track search history:', err);
         }
-      } else {
-        console.warn('[DandelionDB] No fields filled. Make sure you\'re on a product form page.');
       }
     } catch (err) {
       console.error('Error autofilling:', err);
