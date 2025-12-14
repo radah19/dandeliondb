@@ -18,12 +18,18 @@ public class ProductRepository {
 
     private final DynamoDbEnhancedClient enhancedClient;
     private final DynamoDbTable<Product> productTable;
+    private final DynamoDbTable<String> tagsTable;
+    private final DynamoDbTable<String> brandsTable;
 
-    private static final String TABLE_NAME = "products";
+    private static final String PRODUCTS_TABLE_NAME = "products";
+    private static final String TAGS_TABLE_NAME = "tags";
+    private static final String BRANDS_TABLE_NAME = "brands";
 
     public ProductRepository(DynamoDbEnhancedClient enhancedClient) {
         this.enhancedClient = enhancedClient;
-        this.productTable = enhancedClient.table(TABLE_NAME, TableSchema.fromBean(Product.class));
+        this.productTable = enhancedClient.table(PRODUCTS_TABLE_NAME, TableSchema.fromBean(Product.class));
+        this.tagsTable = enhancedClient.table(TAGS_TABLE_NAME, TableSchema.fromBean(String.class));
+        this.brandsTable = enhancedClient.table(BRANDS_TABLE_NAME, TableSchema.fromBean(String.class));
     }
 
     public void addProduct(Product product) {
@@ -54,7 +60,8 @@ public class ProductRepository {
         return productTable.getItem(product);
     }
 
-    private List<Product> getAllProducts() {
+    // This method tanks server memory, avoid it as much as possible
+    public List<Product> getAllProducts() {
         return productTable.scan()
                 .items()
                 .stream()
@@ -85,27 +92,24 @@ public class ProductRepository {
     }
 
     public List<String> getAllAvailableBrands() {
-        List<Product> all = getAllProducts();
-
-        TreeSet<String> brands = new TreeSet<>();
-
-        for (Product p : all) {
-            brands.add(p.getBrand());
-        }
-
-        return brands.stream().toList();
+        return brandsTable.scan()
+                .items()
+                .stream()
+                .collect(Collectors.toList());
     }
 
     public List<String> getAllAvailableTags() {
-        List<Product> all = getAllProducts();
+        return tagsTable.scan()
+                .items()
+                .stream()
+                .collect(Collectors.toList());
+    }
+    public void setAllAvailableBrands(List<String> brands) {
+        brands.forEach(this.brandsTable::putItem);
+    }
 
-        TreeSet<String> tags = new TreeSet<>();
-
-        for (Product p: all) {
-            tags.addAll(p.getTags());
-        }
-
-        return tags.stream().toList();
+    public void setAllAvailableTags(List<String> tags) {
+        tags.forEach(this.tagsTable::putItem);
     }
 
     public List<Product> getProductByAttribute(String inputName, List<String> brands, List<String> tags, String keyword, String upc, String sku, String ean) {
