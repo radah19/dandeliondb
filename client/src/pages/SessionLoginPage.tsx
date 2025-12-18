@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './SignUpPage.css';
 import { apiClient } from '../services/api';
 import { StatusCodes } from 'http-status-codes';
@@ -7,6 +7,7 @@ import { getCookie } from 'typescript-cookie';
 
 function SessionLoginPage({setUser, setVerifyingLoginSession}: SessionProps) {
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const sessionUser = getCookie("sessionUser");
@@ -18,6 +19,7 @@ function SessionLoginPage({setUser, setVerifyingLoginSession}: SessionProps) {
                 // Skip for localhost
                 setUser(user);
                 setVerifyingLoginSession(false);
+                navigate("/search-home");
                 return;
             }
 
@@ -39,6 +41,11 @@ function SessionLoginPage({setUser, setVerifyingLoginSession}: SessionProps) {
                     setUser({
                         email: user.email
                     });
+
+                    // Route to dashboard if current page being navigated to was the landing page
+                    if (location.pathname == "/") {
+                        navigate("/search-home");
+                    }
                 }
             });
         } else {

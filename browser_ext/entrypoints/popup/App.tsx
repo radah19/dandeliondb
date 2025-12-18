@@ -166,7 +166,8 @@ function App() {
         result.text().then(async (body) => {
           await storage.setItem('local:sessionUser', {
             email: email,
-            sessionId: body.split("\n")[1]
+            sessionId: body.split("\n")[1],
+            
           });
 
           setEmail(email);

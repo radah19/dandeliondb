@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => {
     define: {
       'import.meta.env.VITE_BACKEND_URL': JSON.stringify(env.BACKEND_URL), //Defines the VITE_BACKEND_URL environment variable from the .env outside the root directory
       'import.meta.env.VITE_FRONTEND_URL': JSON.stringify(env.FRONTEND_URL),
-      'import.meta.env.VITE_PORT': JSON.stringify(env.PORT)
+      'import.meta.env.VITE_PORT': JSON.stringify(env.PORT),
+      'import.meta.env.VITE_TAGS': JSON.stringify(env.TAGS),
+      'import.meta.env.VITE_BRANDS': JSON.stringify(env.BRANDS),
     },
   }
 })

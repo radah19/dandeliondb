@@ -116,6 +116,15 @@ function SearchHomePage() {
   };
 
   const fetchAllAvailableBrands = async () => {
+    const brandsStore = import.meta.env.VITE_BRANDS;
+    if (brandsStore != null) {
+      setAvailableBrands(JSON.parse(brandsStore).map((b: any) => ({
+            value: b,
+            label: b
+        })));
+      return;
+    }
+
     try {
       const res = await apiClient.fetch(`/product/get-brands`, {
         method: 'GET'
@@ -142,6 +151,15 @@ function SearchHomePage() {
   }
 
   const fetchAllAvailableTags = async () => {
+    const tagsStore = import.meta.env.VITE_TAGS;
+    if (tagsStore != null) {
+      setAvailableTags(JSON.parse(tagsStore).map((b: any) => ({
+            value: b,
+            label: b
+        })));
+      return;
+    }
+
     try {
       const res = await apiClient.fetch(`/product/get-tags`, {
         method: 'GET'
