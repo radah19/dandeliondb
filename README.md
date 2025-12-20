@@ -1,9 +1,8 @@
-# DandelionDB
 <p align="center">
   <img src="./client/public/dandelion_banner2.svg">
 </p>
 
-DandelionDB is a tech solution made for independent toy stores. It was made for a few reasons:
+**DandelionDB** is a tech solution made for independent toy stores. It was made for a few reasons:
               
 - Toy vendors often ship products with missing information, such as missing identifiers (UPC, SKU, EAN), weight, descriptions, etc. This often requires the toy store owner to find/create this information themselves.
 - Independent toy stores receive a lot of inventory daily compared to other businesses, leading to more products needing to be entered onto inventory management systems.
