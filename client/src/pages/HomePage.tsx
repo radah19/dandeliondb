@@ -105,7 +105,7 @@ function HomePage({ user }: HomePageProps) {
                 className="feature-tile"
                 style={{ display: activeTile === 3 ? 'block' : 'none' }}
               >
-                <h2>Traits-based Search Query System</h2>
+                <h2>Trait-based Search Query System</h2>
                 <p>
                   Find exactly what you're looking for with our flexible search system.
                   Search by any combination of product traits—brand, keywords, tags—to pinpoint the right toy, 

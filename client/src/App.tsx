@@ -9,6 +9,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import './App.css';
 import { useState } from 'react';
 import SessionLoginPage from './pages/SessionLoginPage';
+import AboutPage from './pages/AboutPage';
 
 function App() {
   const [user, setUser] = useState({
@@ -30,7 +31,7 @@ function App() {
           <Route path="search-home" element={<SearchHomePage />} />
           <Route path="product/:name/:brand" element={<ProductDetailPage />} />
           <Route path="search" element={<div>Search Page - Coming Soon</div>} />
-          <Route path="about" element={<div>About Page - Coming Soon</div>} />
+          <Route path="about" element={<AboutPage />} />
           <Route path="*" element={<div>404 - Page Not Found</div>} />
         </Route>
       </Routes>

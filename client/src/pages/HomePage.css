@@ -17,7 +17,7 @@
   background: #FAF9F6;
   padding: 0;
   overflow: hidden;
-  gap: 3rem;
+  gap: 1rem;
 }
 
 @keyframes fadeIn {

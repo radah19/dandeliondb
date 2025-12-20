@@ -50,12 +50,14 @@ function Navbar({user, setUser}: Props) {
             (user != undefined && user.email != undefined && user.email !== "") ?
               // User is logged in!
               <div className="nav-buttons">
+                <button className="nav-button login-button" onClick={() => navigate('/about')}>About</button>
                 <button className="nav-button login-button" onClick={logout}>Logout</button>
                 <p className="nav-logged-in-text">{user.email}</p>
               </div>
             :
               // User not logged in
               <div className="nav-buttons">
+                <button className="nav-button login-button" onClick={() => navigate('/about')}>About</button>
                 <button className="nav-button login-button" onClick={() => navigate('/login')}>Login</button>
                 <button className="nav-button login-button" onClick={() => navigate('/signup')}>Signup</button>
               </div>
