@@ -18,4 +18,20 @@ As a result, we created DandelionDB to address these issues. DandelionDB include
 
 Currently, the database is lacking a large amount of data. We may work on this in the future if we find the time!
 
-DandedlionDB was made for the Georgia Tech Entrepreneurial Capstone class (CS 4803 ICD).
+_DandedlionDB was made for the Georgia Tech Entrepreneurial Capstone class (CS 4803 ICD)._
+
+# See the app in action!
+Main Website
+<p align="center">
+  <img src="./client/src/assets/dandeliongif6.gif">
+</p>
+
+Browser Extension & Autofill
+<p align="center">
+  <img src="./client/src/assets/dandeliongif5.gif">
+</p>
+
+Description Generation
+<p align="center">
+  <img src="./client/src/assets/dandeliongif7.gif">
+</p>
