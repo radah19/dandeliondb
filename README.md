@@ -1,5 +1,7 @@
 # DandelionDB
-<img src="./client/public/dandelion_banner2.svg">
+<p align="center">
+  <img src="./client/public/dandelion_banner2.svg">
+</p>
 
 DandelionDB is a tech solution made for independent toy stores. It was made for a few reasons:
               
