@@ -50,6 +50,7 @@ function Navbar({user, setUser}: Props) {
             (user != undefined && user.email != undefined && user.email !== "") ?
               // User is logged in!
               <div className="nav-buttons">
+                <a href="https://chromewebstore.google.com/detail/omeglncdkidhobknafnjbohkpckcoood?utm_source=item-share-cb/"><button className="nav-button login-button">Browser Extension</button></a>
                 <button className="nav-button login-button" onClick={() => navigate('/about')}>About</button>
                 <button className="nav-button login-button" onClick={logout}>Logout</button>
                 <p className="nav-logged-in-text">{user.email}</p>
@@ -57,6 +58,7 @@ function Navbar({user, setUser}: Props) {
             :
               // User not logged in
               <div className="nav-buttons">
+                <a href="https://chromewebstore.google.com/detail/omeglncdkidhobknafnjbohkpckcoood?utm_source=item-share-cb/"><button className="nav-button login-button">Browser Extension</button></a>
                 <button className="nav-button login-button" onClick={() => navigate('/about')}>About</button>
                 <button className="nav-button login-button" onClick={() => navigate('/login')}>Login</button>
                 <button className="nav-button login-button" onClick={() => navigate('/signup')}>Signup</button>

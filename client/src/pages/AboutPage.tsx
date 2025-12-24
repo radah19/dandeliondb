@@ -38,7 +38,7 @@ function AboutPage() {
               
               <ul className="hero-description">
                 <li>An extensive product database for toy information, descriptions, images, etc.</li>
-                <li>A browser extension to enable autofilling product information from DandelionDB onto a toy store's IMS/storepage (Note: currently there is only support for BigCommerce and Lightspeed).</li>
+                <li>A <a href="https://chromewebstore.google.com/detail/omeglncdkidhobknafnjbohkpckcoood?utm_source=item-share-cb/">browser extension</a> to enable autofilling product information from DandelionDB onto a toy store's IMS/storepage (Note: currently there is only support for BigCommerce and Lightspeed).</li>
                 <li>An advanced search system on the website, intended to assist toy stores with finding a product if the product's name and identifiers aren't known.</li>
                 <li>The ability to generate a new description for a product using AI.</li>
               </ul>
