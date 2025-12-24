@@ -2,6 +2,14 @@
   <img src="./client/public/dandelion_banner2.svg">
 </p>
 
+<p align="center">
+<b><a href="https://dandeliondb.up.railway.app/">Main Website</a></b>
+•
+<b><a href="https://chromewebstore.google.com/detail/omeglncdkidhobknafnjbohkpckcoood?utm_source=item-share-cb/">Browser Extension</a></b>
+•
+<b><a href="https://bigcommerce-static-test-site.up.railway.app/">Test Site for Autofill</a></b>
+</p>
+
 **DandelionDB** is a tech solution made for independent toy stores. It was made for a few reasons:
               
 - Toy vendors often ship products with missing information, such as missing identifiers (UPC, SKU, EAN), weight, descriptions, etc. This often requires the toy store owner to find/create this information themselves.
