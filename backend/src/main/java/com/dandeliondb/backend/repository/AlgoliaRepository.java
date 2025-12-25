@@ -1,4 +1,4 @@
-package com.dandeliondb.backend.utils;
+package com.dandeliondb.backend.repository;
 
 import com.algolia.api.SearchClient;
 import com.algolia.model.search.*;
@@ -12,15 +12,15 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
-public class AlgoliaUtils {
+public class AlgoliaRepository {
 
     private static final String INDEX_NAME = "toys";
     private final SearchClient writeClient;
     private final SearchClient readClient;
 
-    public AlgoliaUtils(@Value("${ALGOLIA_APP_ID}") String appId,
-                        @Value("${ALGOLIA_WRITE_KEY}") String writeApiKey,
-                        @Value("${ALGOLIA_READ_KEY}") String readApiKey) {
+    public AlgoliaRepository(@Value("${ALGOLIA_APP_ID}") String appId,
+                             @Value("${ALGOLIA_WRITE_KEY}") String writeApiKey,
+                             @Value("${ALGOLIA_READ_KEY}") String readApiKey) {
         this.writeClient = new SearchClient(appId, writeApiKey);
         this.readClient = new SearchClient(appId, readApiKey);
     }
