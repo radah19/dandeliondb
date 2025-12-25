@@ -1,13 +1,17 @@
 package com.dandeliondb.backend.repository;
 
+import com.dandeliondb.backend.utils.AlgoliaUtils;
 import com.dandeliondb.backend.utils.StringSimilarityUtil;
 import com.dandeliondb.backend.model.Product;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchGetResultPageIterable;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.ReadBatch;
 
 import java.util.*;
@@ -16,8 +20,14 @@ import java.util.stream.Collectors;
 @Repository
 public class ProductRepository {
 
+    private AlgoliaUtils algoliaUtils;
     private final DynamoDbEnhancedClient enhancedClient;
     private final DynamoDbTable<Product> productTable;
+
+    @Autowired
+    public void setAlgoliaUtils(AlgoliaUtils algoliaUtils) {
+        this.algoliaUtils = algoliaUtils;
+    }
 
     private static final String TABLE_NAME = "products";
 
@@ -30,22 +40,27 @@ public class ProductRepository {
         productTable.putItem(product);
     }
 
-    public List<Product> getProductsByName(String inputName) {
-        List<Product> all = getAllProducts();
-
-        List<String> names = all.stream()
-                .map(Product::getName)
-                .toList();
-
-        List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 10, 0.90);
-
-        Map<String, List<Product>> productsByName = all.stream()
-                .collect(Collectors.groupingBy(Product::getName));
-        
-        return topNames.stream()
-                .flatMap(name -> productsByName.getOrDefault(name, List.of()).stream())
-                .collect(Collectors.toList());
+    public List<Product> getProductsByName(String name) {
+        List<String> names = algoliaUtils.searchToyNames(name);
+        return getByNameHelper(names);
     }
+
+//    public List<Product> getProductsByName(String inputName) {
+//        List<Product> all = getAllProducts();
+//
+//        List<String> names = all.stream()
+//                .map(Product::getName)
+//                .toList();
+//
+//        List<String> topNames = StringSimilarityUtil.topMatches(inputName, names, 10, 0.90);
+//
+//        Map<String, List<Product>> productsByName = all.stream()
+//                .collect(Collectors.groupingBy(Product::getName));
+//
+//        return topNames.stream()
+//                .flatMap(name -> productsByName.getOrDefault(name, List.of()).stream())
+//                .collect(Collectors.toList());
+//    }
 
     public Product getProductByNameAndBrand(String name, String brand) {
         Product product = new Product();
@@ -190,5 +205,23 @@ public class ProductRepository {
             }
         }
         return false;
+    }
+
+    private List<Product> getByNameHelper(List<String> names) {
+        List<Product> results = new ArrayList<>();
+
+        for (String name : names) {
+            Key key = Key.builder()
+                    .partitionValue(name)
+                    .build();
+
+            QueryConditional qc = QueryConditional.keyEqualTo(key);
+
+            productTable.query(qc)
+                    .items()
+                    .forEach(results::add);
+        }
+
+        return results;
     }
 }

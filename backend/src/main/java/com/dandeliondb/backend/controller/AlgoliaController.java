@@ -2,7 +2,7 @@ package com.dandeliondb.backend.controller;
 
 import com.dandeliondb.backend.model.Product;
 import com.dandeliondb.backend.repository.ProductRepository;
-import com.dandeliondb.backend.repository.AlgoliaRepository;
+import com.dandeliondb.backend.utils.AlgoliaUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +15,7 @@ import java.util.List;
 public class AlgoliaController {
 
     private ProductRepository productRepository;
-    private AlgoliaRepository algoliaUtils;
+    private AlgoliaUtils algoliaUtils;
 
     @Autowired
     public void setProductRepository(ProductRepository productRepository) {
@@ -23,7 +23,7 @@ public class AlgoliaController {
     }
 
     @Autowired
-    public void setAlgoliaUtils(AlgoliaRepository algoliaUtils) {
+    public void setAlgoliaUtils(AlgoliaUtils algoliaUtils) {
         this.algoliaUtils = algoliaUtils;
     }
 
