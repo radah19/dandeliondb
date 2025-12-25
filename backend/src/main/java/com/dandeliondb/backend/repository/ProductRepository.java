@@ -54,7 +54,7 @@ public class ProductRepository {
         return productTable.getItem(product);
     }
 
-    private List<Product> getAllProducts() {
+    public List<Product> getAllProducts() {
         return productTable.scan()
                 .items()
                 .stream()
