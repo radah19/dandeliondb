@@ -42,7 +42,7 @@ public class ProductRepository {
 
     public List<Product> getProductsByName(String name) {
         List<String> names = algoliaUtils.searchToyNames(name);
-        return getByNameHelper(names);
+        return getProductsByNames(names);
     }
 
 //    public List<Product> getProductsByName(String inputName) {
@@ -207,7 +207,7 @@ public class ProductRepository {
         return false;
     }
 
-    private List<Product> getByNameHelper(List<String> names) {
+    private List<Product> getProductsByNames(List<String> names) {
         List<Product> results = new ArrayList<>();
 
         for (String name : names) {
