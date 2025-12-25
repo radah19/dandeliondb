@@ -38,9 +38,4 @@ public class AlgoliaController {
 
         algoliaUtils.addAllToyNames(names);
     }
-
-    @GetMapping("/algolia/{name}")
-    public List<String> getIndexedNames(@PathVariable String name) {
-        return algoliaUtils.searchToyNames(name);
-    }
 }
