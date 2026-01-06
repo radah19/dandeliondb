@@ -24,7 +24,7 @@ As a result, we created DandelionDB to address these issues. DandelionDB include
 - An advanced search system on the website, intended to assist toy stores with finding a product if the product's name and identifiers aren't known.
 - The ability to generate a new description for a product using AI.
 
-Currently, the database is lacking a large amount of data. We may work on this in the future if we find the time!
+Currently, the database is lacking a large amount of data. Additionally, we currently only support the web platforms Lightspeed and BigCommerce. We may work/add more to DandelionDB in the future if we find the time!
 
 _DandedlionDB was made for the Georgia Tech Entrepreneurial Capstone class (CS 4803 ICD)._
 
